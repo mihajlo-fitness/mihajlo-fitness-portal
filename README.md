@@ -49,6 +49,26 @@ direktno iz baze bilo kome ko bi ga tehnički pronašao i iskoristio izvan
 same aplikacije. Za osetljivije podatke bi trebalo dodati pravu
 autentifikaciju na nivou baze (Supabase Auth + stroža RLS pravila).
 
+## Edukacija — Instagram "otključavanje" i video lekcije
+`/edukacija` je zaključana dok klijent ne klikne "Zapratio/la sam, otključaj"
+(na časnu reč — Instagram ne dozvoljava aplikacijama da automatski provere
+da li je neko zaista zapratio nalog). Otključavanje se pamti u tom
+pregledaču preko `localStorage`, pa ne mora ponovo svaki put.
+
+- Instagram korisničko ime se menja na jednom mestu: `lib/config.js`
+- Lekcije se dodaju u `LEKCIJE` niz u `app/edukacija/page.js`. Ako je
+  `link` YouTube URL (`youtu.be/...` ili `youtube.com/watch?v=...`),
+  video se automatski prikazuje kao ugrađeni plejer unutar aplikacije
+  (klijent ne napušta portal). Bilo koji drugi link se otvara u novom tabu.
+
+## Dokumenti — kako da postaviš prave PDF-ove
+U `app/dokumenti/page.js` je niz `DOCS` sa placeholder linkovima (`#`).
+Dve opcije da postaviš prave fajlove:
+1. **Lokalno u projektu:** stavi PDF u `public/dokumenti/naziv.pdf`, pa u
+   nizu upiši `url: "/dokumenti/naziv.pdf"`.
+2. **Google Drive:** otpremi PDF na Drive, klikni Share → "Anyone with
+   the link", kopiraj link i nalepi ga kao `url`.
+
 ## Pokretanje lokalno
 ```bash
 npm install
