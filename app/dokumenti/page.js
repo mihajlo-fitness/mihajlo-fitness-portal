@@ -4,7 +4,7 @@ import { FileText, Download } from "lucide-react";
 // (npr. postavljenom u /public/dokumenti/ ili na Google Drive linku).
 const DOCS = [
   { naziv: "Zbirka zdravih recepata", tip: "PDF", url: "/dokumenti/ebook recepti.pdf" },
-  { naziv: "Uskoro", tip: "PDF", url: "/dokumenti/ebook recepti.pdf" },
+  { naziv: "Uskoro", tip: "PDF", url: "#" },
   { naziv: "Uskoro", tip: "PDF", url: "#" },
 ];
 
