@@ -2,16 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Search, ChevronRight, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse } from "lucide-react";
+import { Search, ChevronRight, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse, Ruler } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { storageList, storageGet } from "@/lib/storage";
 import { formatDateSr } from "@/lib/helpers";
 import { ACCENT, StatChip } from "@/components/ui";
 
 export default function TrenerPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState({});
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+
+  const handleLogout = async () => {
+    await fetch("/api/trener-logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  };
 
   useEffect(() => {
     (async () => {
@@ -62,10 +71,15 @@ export default function TrenerPage() {
 
   return (
     <div className="max-w-md md:max-w-2xl mx-auto px-6 py-10 animate-fade-in">
-      <p className="text-[11.5px] font-medium text-gray-350 tracking-wide mb-1">TRENERSKI PREGLED</p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11.5px] font-medium text-gray-350 tracking-wide">TRENERSKI PREGLED</p>
+        <button onClick={handleLogout} className="flex items-center gap-1.5 text-[12px] font-medium text-gray-400 hover:text-gray-700">
+          <LogOut size={13} /> Odjava
+        </button>
+      </div>
       <h1 className="text-[26px] font-bold text-gray-900 tracking-tight mb-1">Klijenti</h1>
       <p className="text-[13.5px] text-gray-400 mb-6">
-        {Object.keys(clients).length} {Object.keys(clients).length === 1 ? "klijent" : "klijenata"} sa podacima na ovom uređaju
+        {Object.keys(clients).length} {Object.keys(clients).length === 1 ? "klijent" : "klijenata"} sa podacima
       </p>
 
       <div className="relative mb-6">
@@ -139,6 +153,54 @@ function ClientDetail({ client, onBack }) {
           </p>
         </div>
       </div>
+
+      {client.onboarding && (
+        <div className="mb-6">
+          <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Početni upitnik</p>
+          <div className="grid grid-cols-2 gap-2.5 mb-3">
+            <StatChip icon={<HeartPulse size={16} />} label="Godine" value={client.onboarding.godine} />
+            <StatChip icon={<Ruler size={16} />} label="Visina" value={client.onboarding.visina ? `${client.onboarding.visina} cm` : null} />
+            <StatChip icon={<TrendingUp size={16} />} label="Početna težina" value={client.onboarding.tezina ? `${client.onboarding.tezina} kg` : null} />
+            <StatChip icon={<Dumbbell size={16} />} label="Iskustvo" value={client.onboarding.iskustvo} />
+          </div>
+
+          <div className="rounded-2xl bg-gray-50/70 p-4 space-y-3">
+            <div>
+              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Cilj</p>
+              <p className="text-[13.5px] text-gray-700">
+                {client.onboarding.ciljChip}
+                {client.onboarding.cilj ? ` — ${client.onboarding.cilj}` : ""}
+                {!client.onboarding.ciljChip && !client.onboarding.cilj && "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Povrede / ograničenja</p>
+              <p className="text-[13.5px] text-gray-700">
+                {client.onboarding.povredeNema ? "Nema povreda ni ograničenja" : client.onboarding.povrede || "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Ishrana — navike i restrikcije</p>
+              <p className="text-[13.5px] text-gray-700">{client.onboarding.ishrana || "—"}</p>
+            </div>
+            <div>
+              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Životne navike</p>
+              <p className="text-[13.5px] text-gray-700">
+                San {client.onboarding.san ? `${client.onboarding.san}h` : "—"} · Stres {client.onboarding.stres}/10 ·{" "}
+                {client.onboarding.posao || "—"} · Pušenje: {client.onboarding.pusenje || "—"} · Alkohol: {client.onboarding.alkohol || "—"}
+              </p>
+            </div>
+          </div>
+
+          {client.onboarding.merenja && Object.values(client.onboarding.merenja).some(Boolean) && (
+            <div className="grid grid-cols-2 gap-2.5 mt-3">
+              {Object.entries(client.onboarding.merenja).map(([k, v]) =>
+                v ? <StatChip key={k} icon={<Ruler size={15} />} label={k} value={`${v} cm`} /> : null
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {chartData.length > 1 && (
         <div className="rounded-2xl border border-gray-100 p-4 mb-6">

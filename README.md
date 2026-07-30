@@ -36,6 +36,20 @@ Podaci (check-inovi, upitnici) se čuvaju preko `lib/storage.js`:
 5. Na Vercel-u: Project → Settings → Environment Variables → dodaj ista
    dva imena i vrednosti, pa ponovo deploy-uj (Redeploy).
 
+## Zaštita Trenerskog pregleda lozinkom
+`/trener` je zaštićen jednostavnom lozinkom preko `middleware.js`:
+1. Dodaj env promenljivu `COACH_PASSWORD` (i lokalno u `.env.local` i na
+   Vercel-u u Environment Variables) sa svojom tajnom lozinkom.
+2. Kad neko pokuša da otvori `/trener` bez prijave, biva preusmeren na
+   `/trener/login` gde unosi lozinku.
+3. Nakon tačne lozinke, postavlja se siguran (httpOnly) kolačić na 30 dana.
+
+Napomena: ovo sakriva stranicu i sprečava klijente da joj slučajno/lako
+pristupe, ali `anon` Supabase ključ i dalje dozvoljava čitanje/pisanje
+direktno iz baze bilo kome ko bi ga tehnički pronašao i iskoristio izvan
+same aplikacije. Za osetljivije podatke bi trebalo dodati pravu
+autentifikaciju na nivou baze (Supabase Auth + stroža RLS pravila).
+
 ## Pokretanje lokalno
 ```bash
 npm install
