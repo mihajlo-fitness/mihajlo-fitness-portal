@@ -68,13 +68,6 @@ export default function TrenerPage() {
         {Object.keys(clients).length} {Object.keys(clients).length === 1 ? "klijent" : "klijenata"} sa podacima na ovom uređaju
       </p>
 
-      <div className="rounded-2xl bg-amber-50 border border-amber-100 p-3.5 mb-6">
-        <p className="text-[12px] text-amber-700 leading-relaxed">
-          Napomena: ovaj pregled trenutno prikazuje samo check-inove poslate <span className="font-semibold">sa ovog uređaja</span>.
-          Za deljeni pregled svih klijenata sa bilo kog uređaja potrebno je povezati bazu podataka — javi mi kad si spreman/na, pa to sredimo.
-        </p>
-      </div>
-
       <div className="relative mb-6">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
         <input

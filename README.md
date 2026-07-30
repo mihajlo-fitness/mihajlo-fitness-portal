@@ -19,20 +19,25 @@ Next.js 14 (App Router) + Tailwind CSS. Mobile-first, responzivan portal za klij
 1. Napravi folder u `app/` (npr. `app/nova-sekcija/`) i u njemu `page.js`.
 2. Dodaj stavku u `lib/navigation.js` — automatski se pojavljuje u navigaciji.
 
-Sadržajne stranice (ishrana, treninzi, edukacija, faq, dokumenti) su građene
-oko jednostavnih nizova na vrhu fajla — dodavanje novog obroka, treninga,
-lekcije ili pitanja je samo dodavanje jednog objekta u niz.
+## Baza podataka (Supabase)
+Podaci (check-inovi, upitnici) se čuvaju preko `lib/storage.js`:
+- Ako su podešene env promenljive `NEXT_PUBLIC_SUPABASE_URL` i
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, podaci idu u Supabase — deljeni su
+  i vidljivi sa bilo kog uređaja (trener vidi sve klijente).
+- Ako te promenljive nisu podešene, aplikacija se automatski vraća na
+  `localStorage` (podaci samo na tom uređaju) — korisno za brzo
+  testiranje bez podešavanja baze.
+
+### Podešavanje Supabase-a
+1. Napravi nalog na supabase.com i novi projekat.
+2. U **SQL Editor**-u pokreni sadržaj fajla `supabase/schema.sql`.
+3. U **Project Settings → API** kopiraj `Project URL` i `anon public` ključ.
+4. Lokalno: kopiraj `.env.local.example` u `.env.local` i upiši te vrednosti.
+5. Na Vercel-u: Project → Settings → Environment Variables → dodaj ista
+   dva imena i vrednosti, pa ponovo deploy-uj (Redeploy).
 
 ## Pokretanje lokalno
 ```bash
 npm install
 npm run dev
 ```
-
-## Čuvanje podataka
-Trenutno se podaci (check-inovi, upitnici) čuvaju u `localStorage`
-pregledača — rade odmah, bez podešavanja, ali su vidljivi samo na uređaju
-na kom su uneti. Za pravi deljeni pregled (trener vidi klijente sa svog
-uređaja) potrebno je povezati bazu podataka (npr. Supabase, Vercel Postgres).
-Sav storage kod je izolovan u `lib/storage.js` — kad budeš spreman/na,
-menja se samo taj fajl.
