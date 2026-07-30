@@ -43,7 +43,7 @@ export function IgGate({ onUnlock }) {
       </div>
       <h1 className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">Otključaj Edukaciju</h1>
       <p className="text-[13.5px] text-gray-400 leading-relaxed mb-7 max-w-xs mx-auto">
-        Zaprati <span className="font-medium text-gray-600">@{mihajlofitness}</span> na Instagramu da dobiješ pristup video lekcijama i savetima.
+        Zaprati <span className="font-medium text-gray-600">@{INSTAGRAM_HANDLE}</span> na Instagramu da dobiješ pristup video lekcijama i savetima.
       </p>
       <a
         href={INSTAGRAM_URL}
