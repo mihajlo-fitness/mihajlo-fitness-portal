@@ -12,9 +12,9 @@ import { useIgUnlocked, IgGate } from "@/components/IgGate";
 //     u novom tabu.
 const LEKCIJE = [
   { naslov: "Kako pravilno raditi čučanj", kategorija: "Tehnika", link: "https://www.muscleandstrength.com/exercises/dumbbell-goblet-squat" },
-  { naslov: "Zašto je san ključan za napredak", kategorija: "Regeneracija", link: "https://youtu.be/dQw4w9WgXcQ" },
-  { naslov: "Osnove flexible dieting-a", kategorija: "Ishrana", link: "https://youtu.be/dQw4w9WgXcQ" },
-  { naslov: "Progresivno preopterećenje objašnjeno", kategorija: "Trening", link: "https://youtu.be/dQw4w9WgXcQ" },
+  { naslov: "Zašto je san ključan za napredak", kategorija: "Regeneracija", link: "https://www.youtube.com/watch?v=7OEwm0slt9A&t=2864s" },
+  { naslov: "Uskoro", kategorija: "Ishrana", link: "linkovde" },
+  { naslov: "Uskoro", kategorija: "Trening", link: "linkovde" },
 ];
 
 function getYouTubeId(url = "") {
