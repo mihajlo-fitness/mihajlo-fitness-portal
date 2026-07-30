@@ -30,3 +30,20 @@ create policy "Javni pristup za izmenu"
 create policy "Javni pristup za brisanje"
   on kv_store for delete
   using (true);
+
+-- ============================================================
+-- FOTOGRAFIJE (Supabase Storage)
+-- ============================================================
+-- Prvo napravi bucket preko Supabase dashboard-a:
+-- Storage → New bucket → naziv tačno "photos" → uključi "Public bucket" → Create.
+-- Zatim pokreni ovo ispod u SQL Editor-u da dozvoliš otpremanje fotografija:
+
+create policy "Javni upload fotografija"
+  on storage.objects for insert
+  to public
+  with check (bucket_id = 'photos');
+
+create policy "Javno citanje fotografija"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'photos');

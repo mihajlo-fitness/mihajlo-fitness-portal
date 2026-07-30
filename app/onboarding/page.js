@@ -16,7 +16,7 @@ import {
   FooterNav,
   ThankYou,
 } from "@/components/ui";
-import { storageSet } from "@/lib/storage";
+import { storageSet, uploadPhoto } from "@/lib/storage";
 import { slugify, todayISO } from "@/lib/helpers";
 
 const emptyOnboarding = () => ({
@@ -187,7 +187,7 @@ export default function OnboardingPage() {
             <PhotoSlot label="Profil" file={data.slike.profil} onChange={(f) => set({ slike: { ...data.slike, profil: f } })} />
           </div>
           <p className="text-[12px] text-gray-350 mt-4 leading-relaxed">
-            Napomena: fotografije se prikazuju samo u ovoj sesiji, u ovom pregledaču.
+            Fotografije se bezbedno čuvaju i vidljive su treneru u Trenerskom pregledu.
           </p>
         </>
       ),
@@ -208,12 +208,17 @@ export default function OnboardingPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     const slug = slugify(data.ime) || "klijent";
+    const [frontUrl, ledjaUrl, profilUrl] = await Promise.all([
+      uploadPhoto(data.slike.front, `onboarding/${slug}/front`),
+      uploadPhoto(data.slike.ledja, `onboarding/${slug}/ledja`),
+      uploadPhoto(data.slike.profil, `onboarding/${slug}/profil`),
+    ]);
     const payload = {
       ...data,
       slike: {
-        front: data.slike.front?.name || null,
-        ledja: data.slike.ledja?.name || null,
-        profil: data.slike.profil?.name || null,
+        front: frontUrl || data.slike.front?.name || null,
+        ledja: ledjaUrl || data.slike.ledja?.name || null,
+        profil: profilUrl || data.slike.profil?.name || null,
       },
       timestamp: Date.now(),
     };

@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Search, ChevronRight, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse, Ruler } from "lucide-react";
+import { Search, ChevronRight, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse, Ruler, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { storageList, storageGet } from "@/lib/storage";
+import { storageList, storageGet, storageSet } from "@/lib/storage";
 import { formatDateSr } from "@/lib/helpers";
 import { ACCENT, StatChip } from "@/components/ui";
 
@@ -57,7 +57,7 @@ export default function TrenerPage() {
       const zItems = [];
       for (const key of zahtevKeys) {
         const val = await storageGet(key);
-        if (val) zItems.push(val);
+        if (val) zItems.push({ key, ...val, status: val.status || "novo" });
       }
       zItems.sort((a, b) => b.timestamp - a.timestamp);
       setZahtevi(zItems);
@@ -74,6 +74,55 @@ export default function TrenerPage() {
       setLoading(false);
     })();
   }, []);
+
+  const STATUSI = [
+    { id: "novo", label: "Novo", classes: "bg-blue-50 text-blue-600" },
+    { id: "kontaktiran", label: "Kontaktiran", classes: "bg-amber-50 text-amber-600" },
+    { id: "reseno", label: "Rešeno", classes: "bg-emerald-50 text-emerald-600" },
+  ];
+
+  const cycleStatus = async (key) => {
+    const item = zahtevi.find((z) => z.key === key);
+    if (!item) return;
+    const idx = STATUSI.findIndex((s) => s.id === item.status);
+    const next = STATUSI[(idx + 1) % STATUSI.length].id;
+    const { key: _k, ...rest } = item;
+    await storageSet(key, { ...rest, status: next });
+    setZahtevi((prev) => prev.map((z) => (z.key === key ? { ...z, status: next } : z)));
+  };
+
+  const handleExportCSV = () => {
+    const rows = [
+      ["Ime", "Datum", "Nedelja", "Tezina(kg)", "Koraci", "Treninzi", "Ishrana", "Voda(L)", "San(h)", "Osecaj", "Energija", "Stres", "Motivacija"],
+    ];
+    Object.values(clients).forEach((c) => {
+      c.checkins.forEach((chk) => {
+        rows.push([
+          c.name,
+          chk.datum,
+          chk.nedelja,
+          chk.tezina,
+          chk.koraci,
+          chk.treninzi,
+          chk.ishranaPlan,
+          chk.voda,
+          chk.san,
+          chk.osecaj,
+          chk.energija,
+          chk.stres,
+          chk.motivacija,
+        ]);
+      });
+    });
+    const csv = rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `check-inovi-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const list = useMemo(
     () =>
@@ -130,18 +179,27 @@ export default function TrenerPage() {
           ) : zahtevi.length === 0 ? (
             <p className="text-center text-gray-400 text-[14px] mt-10">Još nema zahteva za pakete.</p>
           ) : (
-            zahtevi.map((z, i) => (
-              <div key={i} className="rounded-2xl border border-gray-100 p-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[14.5px] font-semibold text-gray-900">{z.ime}</p>
-                  <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(z.timestamp).toISOString())}</span>
+            zahtevi.map((z) => {
+              const st = STATUSI.find((s) => s.id === z.status) || STATUSI[0];
+              return (
+                <div key={z.key} className="rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-[14.5px] font-semibold text-gray-900">{z.ime}</p>
+                    <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(z.timestamp).toISOString())}</span>
+                  </div>
+                  <p className="text-[13px] font-medium text-accent mb-2">
+                    {z.paket} {z.cena ? `· ${z.cena}` : ""}
+                  </p>
+                  {z.poruka && <p className="text-[13px] text-gray-500 leading-relaxed mb-3">{z.poruka}</p>}
+                  <button
+                    onClick={() => cycleStatus(z.key)}
+                    className={"text-[11.5px] font-semibold px-2.5 py-1 rounded-full transition-colors " + st.classes}
+                  >
+                    {st.label} · promeni
+                  </button>
                 </div>
-                <p className="text-[13px] font-medium text-accent mb-1">
-                  {z.paket} {z.cena ? `· ${z.cena}` : ""}
-                </p>
-                {z.poruka && <p className="text-[13px] text-gray-500 leading-relaxed">{z.poruka}</p>}
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
@@ -168,6 +226,14 @@ export default function TrenerPage() {
 
       {tab === "klijenti" && (
         <>
+      {Object.keys(clients).length > 0 && (
+        <button
+          onClick={handleExportCSV}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl border border-gray-200 py-2.5 text-[13px] font-medium text-gray-600 hover:bg-gray-50 mb-4"
+        >
+          <Download size={14} /> Izvezi sve check-inove (CSV)
+        </button>
+      )}
       <div className="relative mb-6">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
         <input
@@ -339,6 +405,25 @@ function ClientDetail({ client, onBack }) {
                   <p className="text-[13.5px] text-gray-700">{last.pitanje}</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {last.slike && Object.values(last.slike).some((v) => typeof v === "string" && v.startsWith("http")) && (
+            <div className="mb-6">
+              <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Fotografije · {formatDateSr(last.datum)}</p>
+              <div className="grid grid-cols-3 gap-2.5">
+                {["front", "ledja", "profil"].map((k) =>
+                  last.slike[k]?.startsWith("http") ? (
+                    <a key={k} href={last.slike[k]} target="_blank" rel="noopener noreferrer" className="aspect-[3/4] rounded-xl overflow-hidden border border-gray-100">
+                      <img src={last.slike[k]} alt={k} className="w-full h-full object-cover" />
+                    </a>
+                  ) : (
+                    <div key={k} className="aspect-[3/4] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[11px] text-gray-300">
+                      —
+                    </div>
+                  )
+                )}
+              </div>
             </div>
           )}
         </>

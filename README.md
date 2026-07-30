@@ -61,13 +61,60 @@ pregledaču preko `localStorage`, pa ne mora ponovo svaki put.
   video se automatski prikazuje kao ugrađeni plejer unutar aplikacije
   (klijent ne napušta portal). Bilo koji drugi link se otvara u novom tabu.
 
+## Kako da menjaš sadržaj bez terminala (preko GitHub sajta)
+Za ovakve male izmene (dodavanje lekcije, menjanje linka, dodavanje PDF-a)
+ne moraš da koristiš Command Prompt/git komande — može sve direktno na
+github.com u pregledaču:
+
+1. Otvori svoj repozitorijum na github.com
+2. Klikni kroz foldere do fajla koji menjaš (npr. `app` → `edukacija` → `page.js`)
+3. Klikni na ikonicu **olovke** (Edit this file) gore desno
+4. Izmeni tekst direktno u browseru
+5. Skroluj dole, ukucaj kratak opis izmene, klikni **Commit changes**
+6. Vercel automatski napravi novi deploy za 1-2 minuta — gotovo
+
 ## Dokumenti — kako da postaviš prave PDF-ove
+`/dokumenti` je (kao i Edukacija) zaključana istim Instagram "otključavanjem"
+— kad neko otključa jednu stranicu, otključana mu je i druga (isti kolačić/localStorage).
+
 U `app/dokumenti/page.js` je niz `DOCS` sa placeholder linkovima (`#`).
-Dve opcije da postaviš prave fajlove:
-1. **Lokalno u projektu:** stavi PDF u `public/dokumenti/naziv.pdf`, pa u
-   nizu upiši `url: "/dokumenti/naziv.pdf"`.
-2. **Google Drive:** otpremi PDF na Drive, klikni Share → "Anyone with
-   the link", kopiraj link i nalepi ga kao `url`.
+Da dodaš pravi PDF preko GitHub sajta (bez terminala):
+1. Otvori svoj repozitorijum na github.com
+2. Uđi u folder `public` → `dokumenti`
+3. Klikni **Add file → Upload files**, prevuci svoj PDF, pa **Commit changes**
+4. Vrati se u `app/dokumenti/page.js` (Edit preko olovke), i u `DOCS` nizu
+   promeni `url: "#"` u `url: "/dokumenti/tacno-ime-fajla.pdf"` za taj dokument
+5. Commit changes — gotovo, Vercel će automatski objaviti novu verziju
+
+Alternativa bez upload-a fajla u projekat: otpremi PDF na Google Drive,
+Share → "Anyone with the link", pa taj link nalepi direktno kao `url`.
+
+## Novo: keep-alive, čuvanje fotografija, statusi, CSV izvoz
+
+**Keep-alive (sprečava pauziranje besplatne Supabase baze)**
+`vercel.json` sadrži cron koji jednom dnevno pogodi `/api/keep-alive` i
+napravi mali upit ka bazi. Ne treba ništa dodatno da podesiš — počinje
+da radi čim se ovo objavi na Vercel-u (Vercel cron radi samo na
+Production deployment-u).
+
+**Prave fotografije (Supabase Storage)**
+Fotografije koje klijenti otpreme sada se trajno čuvaju (ranije su se
+samo privremeno prikazivale). Potrebno je jednokratno podešavanje:
+1. Supabase dashboard → **Storage** → **New bucket**
+2. Naziv **tačno**: `photos`, uključi **Public bucket**, **Create**
+3. U **SQL Editor**-u pokreni deo `supabase/schema.sql` ispod "FOTOGRAFIJE"
+   (ako si već pokrenuo/la ceo fajl ranije, samo dodaj taj novi deo)
+
+Ako bucket nije podešen, aplikacija se automatski vraća na stari
+fallback (samo naziv fajla, bez trajnog čuvanja) — ništa se ne kvari.
+
+**Statusi na zahtevima**
+U Trenerskom pregledu → tab Zahtevi, klikni na pilulu (Novo/Kontaktiran/Rešeno)
+da promeniš status — kruži kroz tri stanja pri svakom kliku.
+
+**Izvoz u CSV**
+U tabu Klijenti, dugme "Izvezi sve check-inove (CSV)" preuzima tabelu
+svih check-inova svih klijenata — otvara se u Excel-u/Google Sheets-u.
 
 ## Pokretanje lokalno
 ```bash
