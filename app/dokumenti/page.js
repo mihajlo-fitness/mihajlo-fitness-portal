@@ -3,7 +3,7 @@ import { FileText, Download } from "lucide-react";
 // 👉 Dodaj svoje PDF-ove/recepte ovde. "url" treba da vodi ka fajlu
 // (npr. postavljenom u /public/dokumenti/ ili na Google Drive linku).
 const DOCS = [
-  { naziv: "Zbirka zdravih recepata", tip: "PDF", url: "https://drive.google.com/file/d/1UuHv6JJCN77fJN7DS5Amx1eTvq9FOn7Q/view?usp=sharing" },
+  { naziv: "Zbirka zdravih recepata", tip: "PDF", url: "/dokumenti/ebook recepti.pdf" },
   { naziv: "Uskoro", tip: "PDF", url: "#" },
   { naziv: "Uskoro", tip: "PDF", url: "#" },
 ];
