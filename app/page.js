@@ -3,8 +3,6 @@ import {
   Sparkles,
   ClipboardCheck,
   TrendingUp,
-  Salad,
-  Dumbbell,
   BookOpen,
   ChevronRight,
 } from "lucide-react";
@@ -12,8 +10,7 @@ import {
 const QUICK_LINKS = [
   { href: "/checkin", label: "Nedeljni check-in", desc: "Popuni formu za ovu nedelju", icon: ClipboardCheck, filled: true },
   { href: "/napredak", label: "Napredak", desc: "Težina, mere i fotografije kroz vreme", icon: TrendingUp },
-  { href: "/ishrana", label: "Plan ishrane", desc: "Tvoj trenutni nutritivni plan", icon: Salad },
-  { href: "/treninzi", label: "Plan treninga", desc: "Treninzi za ovu nedelju", icon: Dumbbell },
+  { href: "/coaching", label: "Paketi & Coaching", desc: "Plan ishrane, treninga ili puni coaching", icon: Sparkles },
   { href: "/edukacija", label: "Edukacija", desc: "Video lekcije i korisni saveti", icon: BookOpen },
 ];
 

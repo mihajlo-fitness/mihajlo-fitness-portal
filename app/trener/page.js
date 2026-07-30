@@ -13,6 +13,9 @@ export default function TrenerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState({});
+  const [zahtevi, setZahtevi] = useState([]);
+  const [poruke, setPoruke] = useState([]);
+  const [tab, setTab] = useState("klijenti"); // klijenti | zahtevi | poruke
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
 
@@ -49,6 +52,25 @@ export default function TrenerPage() {
 
       Object.values(map).forEach((c) => c.checkins.sort((a, b) => a.timestamp - b.timestamp));
       setClients(map);
+
+      const zahtevKeys = await storageList("zahtev:");
+      const zItems = [];
+      for (const key of zahtevKeys) {
+        const val = await storageGet(key);
+        if (val) zItems.push(val);
+      }
+      zItems.sort((a, b) => b.timestamp - a.timestamp);
+      setZahtevi(zItems);
+
+      const porukaKeys = await storageList("poruka:");
+      const pItems = [];
+      for (const key of porukaKeys) {
+        const val = await storageGet(key);
+        if (val) pItems.push(val);
+      }
+      pItems.sort((a, b) => b.timestamp - a.timestamp);
+      setPoruke(pItems);
+
       setLoading(false);
     })();
   }, []);
@@ -82,6 +104,70 @@ export default function TrenerPage() {
         {Object.keys(clients).length} {Object.keys(clients).length === 1 ? "klijent" : "klijenata"} sa podacima
       </p>
 
+      <div className="flex gap-2 mb-6 border-b border-gray-100">
+        {[
+          { id: "klijenti", label: "Klijenti" },
+          { id: "zahtevi", label: `Zahtevi${zahtevi.length ? ` (${zahtevi.length})` : ""}` },
+          { id: "poruke", label: `Poruke${poruke.length ? ` (${poruke.length})` : ""}` },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={
+              "px-3 py-2.5 text-[13px] font-medium border-b-2 -mb-px transition-colors " +
+              (tab === t.id ? "border-accent text-accent" : "border-transparent text-gray-400 hover:text-gray-600")
+            }
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "zahtevi" && (
+        <div className="space-y-2.5">
+          {loading ? (
+            <p className="text-center text-gray-300 text-[13.5px] mt-10">Učitavanje...</p>
+          ) : zahtevi.length === 0 ? (
+            <p className="text-center text-gray-400 text-[14px] mt-10">Još nema zahteva za pakete.</p>
+          ) : (
+            zahtevi.map((z, i) => (
+              <div key={i} className="rounded-2xl border border-gray-100 p-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[14.5px] font-semibold text-gray-900">{z.ime}</p>
+                  <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(z.timestamp).toISOString())}</span>
+                </div>
+                <p className="text-[13px] font-medium text-accent mb-1">
+                  {z.paket} {z.cena ? `· ${z.cena}` : ""}
+                </p>
+                {z.poruka && <p className="text-[13px] text-gray-500 leading-relaxed">{z.poruka}</p>}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "poruke" && (
+        <div className="space-y-2.5">
+          {loading ? (
+            <p className="text-center text-gray-300 text-[13.5px] mt-10">Učitavanje...</p>
+          ) : poruke.length === 0 ? (
+            <p className="text-center text-gray-400 text-[14px] mt-10">Još nema poruka.</p>
+          ) : (
+            poruke.map((p, i) => (
+              <div key={i} className="rounded-2xl border border-gray-100 p-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[14.5px] font-semibold text-gray-900">{p.ime}</p>
+                  <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(p.timestamp).toISOString())}</span>
+                </div>
+                <p className="text-[13px] text-gray-500 leading-relaxed">{p.poruka}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "klijenti" && (
+        <>
       <div className="relative mb-6">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
         <input
@@ -124,6 +210,8 @@ export default function TrenerPage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

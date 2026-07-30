@@ -5,13 +5,11 @@ import { Mail, Phone, Send, MessageCircle } from "lucide-react";
 import { Field, TextArea, TextInput, ACCENT } from "@/components/ui";
 import { storageSet } from "@/lib/storage";
 
-// 👉 Zameni ove podatke svojim pravim kontaktom.
+// 👉 Kontakt podaci trenera — menjaj ovde po potrebi.
 const COACH_CONTACT = {
-  ime: "Mihajlo",
-  email: "mihajlo@fitnesscoach.rs",
-  telefon: "+381 60 000 0000",
-  viber: "#",
-  whatsapp: "#",
+  telefonPrikaz: "+381 60 471 2485",
+  telefonLink: "+381604712485", // format bez razmaka/nula za tel: i wa.me linkove
+  email: "mihajlo.trener@gmail.com",
 };
 
 export default function KontaktPage() {
@@ -32,14 +30,35 @@ export default function KontaktPage() {
       <h1 className="text-[26px] font-bold text-gray-900 tracking-tight mb-1">Piši mi direktno</h1>
       <p className="text-[13.5px] text-gray-400 mb-8">Za sve što ne može da sačeka nedeljni check-in.</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-2 gap-3 mb-3">
         <a href={`mailto:${COACH_CONTACT.email}`} className="rounded-2xl border border-gray-100 p-4 flex flex-col gap-2">
           <Mail size={18} className="text-accent" />
           <span className="text-[13px] font-medium text-gray-700">Email</span>
+          <span className="text-[11.5px] text-gray-400 truncate">{COACH_CONTACT.email}</span>
         </a>
-        <a href={`tel:${COACH_CONTACT.telefon}`} className="rounded-2xl border border-gray-100 p-4 flex flex-col gap-2">
+        <a href={`tel:${COACH_CONTACT.telefonLink}`} className="rounded-2xl border border-gray-100 p-4 flex flex-col gap-2">
           <Phone size={18} className="text-accent" />
           <span className="text-[13px] font-medium text-gray-700">Poziv</span>
+          <span className="text-[11.5px] text-gray-400">{COACH_CONTACT.telefonPrikaz}</span>
+        </a>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        <a
+          href={`https://wa.me/${COACH_CONTACT.telefonLink.replace("+", "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-2xl border border-gray-100 p-4 flex items-center gap-2.5"
+        >
+          <MessageCircle size={18} className="text-emerald-500" />
+          <span className="text-[13px] font-medium text-gray-700">WhatsApp</span>
+        </a>
+        <a
+          href={`viber://chat?number=%2B${COACH_CONTACT.telefonLink.replace("+", "")}`}
+          className="rounded-2xl border border-gray-100 p-4 flex items-center gap-2.5"
+        >
+          <MessageCircle size={18} className="text-purple-500" />
+          <span className="text-[13px] font-medium text-gray-700">Viber</span>
         </a>
       </div>
 

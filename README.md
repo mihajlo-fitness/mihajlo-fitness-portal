@@ -7,8 +7,7 @@ Next.js 14 (App Router) + Tailwind CSS. Mobile-first, responzivan portal za klij
 - `/onboarding` — Početni upitnik (popunjava se jednom)
 - `/checkin` — Nedeljni check-in
 - `/napredak` — Napredak klijenta (grafik težine, mere, istorija)
-- `/ishrana` — Plan ishrane
-- `/treninzi` — Plan treninga
+- `/coaching` — Paketi & Coaching (4 paketa + zahtev)
 - `/edukacija` — Edukacija
 - `/kontakt` — Kontakt sa trenerom
 - `/faq` — FAQ
