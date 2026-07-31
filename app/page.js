@@ -21,7 +21,7 @@ export default function HomePage() {
         Klijentski portal
       </p>
       <h1 className="text-[32px] md:text-[40px] leading-[1.15] font-bold text-gray-900 tracking-tight mb-4">
-        Dobrodošao/la nazad 👋
+        Dobrodošao/la 👋
       </h1>
       <p className="text-[15px] text-gray-400 leading-relaxed mb-10 max-w-md">
         Ovde pratiš svoj napredak, popunjavaš nedeljni check-in i imaš pristup planovima i edukaciji.
