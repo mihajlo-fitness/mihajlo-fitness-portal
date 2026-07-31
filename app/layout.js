@@ -7,7 +7,29 @@ const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter" 
 
 export const metadata = {
   title: "Mihajlo Fitness Coach — Klijentski portal",
-  description: "Nedeljni check-in, napredak, planovi i edukacija za klijente Mihajlo Fitness Coach-a.",
+  description: "Online fitness coaching u Srbiji — individualni planovi ishrane i treninga, nedeljni check-in, praćenje napretka. Prijavi se za saradnju sa sertifikovanim personalnim trenerom.",
+  keywords: [
+    "fitness coach Srbija",
+    "online trener",
+    "personalni trener online",
+    "plan ishrane",
+    "plan treninga",
+    "mršavljenje",
+    "online coaching",
+    "Mihajlo Fitness",
+  ],
+  openGraph: {
+    title: "Mihajlo Fitness Coach — Klijentski portal",
+    description: "Online fitness coaching — individualni planovi, nedeljni check-in, praćenje napretka. Prijavi se za saradnju.",
+    locale: "sr_RS",
+    type: "website",
+  },
+  // Kad dodaš sajt u Google Search Console, ovde nalepi verifikacioni kod
+  // (Search Console → Settings → Ownership verification → HTML tag → samo
+  // vrednost content="..." atributa, bez ostatka taga).
+  verification: {
+    google: "",
+  },
 };
 
 export const viewport = {

@@ -143,6 +143,41 @@ Ako je `RESEND_API_KEY` podešen, svake nedelje ujutru (cron u
 dobijaju kratak podsetnik da popune check-in. Klijenti bez unetog
 email-a se preskaču (email polje u upitniku je opciono).
 
+## Vidljivost na Google pretrazi (SEO)
+
+**Šta je već urađeno u kodu:**
+- Naslov, opis i ključne reči u `app/layout.js` (metadata)
+- `app/sitemap.js` — automatska mapa sajta na `/sitemap.xml`
+- `app/robots.js` — govori Google-u koje strane da indeksira (početna,
+  paketi, edukacija, kontakt, FAQ), a koje da preskoči (check-in forme,
+  trenerski pregled — to su privatne/funkcionalne strane, ne sadržaj za
+  pretragu)
+
+**VAŽNO — pre nego što se objavi:** u `app/sitemap.js` i `app/robots.js`
+zameni `https://mihajlo-fitness-portal.vercel.app` svojim **stvarnim**
+URL-om sajta (proveri tačan link na Vercel dashboard-u — može se malo
+razlikovati).
+
+**Koraci koje uradiš na Google strani (jednokratno, ~10 minuta):**
+1. Idi na **search.google.com/search-console**
+2. **Add property** → unesi svoj sajt (URL prefix opcija, nalepi pun link, npr. `https://mihajlo-fitness-portal.vercel.app`)
+3. Google nudi nekoliko načina verifikacije — najlakši je **HTML tag**:
+   kopiraj samo vrednost iz `content="..."` koju ti Google da, i nalepi
+   je u `app/layout.js` u `verification: { google: "OVDE" }`
+4. Pošalji izmenu na GitHub (`git add . && git commit -m "seo" && git push`), sačekaj deploy
+5. Vrati se u Search Console, klikni **Verify**
+6. Kad je verifikovano: levi meni → **Sitemaps** → unesi `sitemap.xml` → **Submit**
+
+Posle ovoga, Google počinje da indeksira sajt — obično traje **nekoliko
+dana do par nedelja** da se stranice stvarno pojave u pretrazi, to je
+normalno i ne može se ubrzati.
+
+**Realno očekivanje:** portal će se brzo pojaviti kad neko pretraži tačno
+tvoje ime/brend ("Mihajlo Fitness Coach"). Da bi se pojavio za generičke
+pretrage ("fitness trener Beograd" i slično) trebalo bi vremenom dodati
+i sadržaj koji ljudi zapravo guglaju (npr. blog/članci) — to je veći,
+odvojeni poduhvat ako ti ikad zatreba.
+
 ## Pokretanje lokalno
 ```bash
 npm install
