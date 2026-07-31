@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { storageList, storageGet, storageSet } from "@/lib/storage";
 import { formatDateSr } from "@/lib/helpers";
-import { ACCENT, StatChip } from "@/components/ui";
+import { ACCENT, StatChip, Field, TextInput, TextArea } from "@/components/ui";
 
 export default function TrenerPage() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function TrenerPage() {
         const val = await storageGet(key);
         if (!val) continue;
         const slug = key.split(":")[1];
-        map[slug] = map[slug] || { slug, name: val.ime || slug, onboarding: null, checkins: [] };
+        map[slug] = map[slug] || { slug, name: val.ime || slug, onboarding: null, checkins: [], plan: null };
         map[slug].onboarding = val;
         map[slug].name = val.ime || slug;
       }
@@ -45,9 +45,17 @@ export default function TrenerPage() {
         const val = await storageGet(key);
         if (!val) continue;
         const slug = key.split(":")[1];
-        map[slug] = map[slug] || { slug, name: val.ime || slug, onboarding: null, checkins: [] };
+        map[slug] = map[slug] || { slug, name: val.ime || slug, onboarding: null, checkins: [], plan: null };
         map[slug].checkins.push(val);
         map[slug].name = val.ime || map[slug].name;
+      }
+
+      const planKeys = await storageList("plan:");
+      for (const key of planKeys) {
+        const val = await storageGet(key);
+        if (!val) continue;
+        const slug = key.split(":")[1];
+        if (map[slug]) map[slug].plan = val;
       }
 
       Object.values(map).forEach((c) => c.checkins.sort((a, b) => a.timestamp - b.timestamp));
@@ -284,6 +292,19 @@ export default function TrenerPage() {
 }
 
 function ClientDetail({ client, onBack }) {
+  const [planLink, setPlanLink] = useState(client.plan?.link || "");
+  const [planTekst, setPlanTekst] = useState(client.plan?.tekst || "");
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [planSaved, setPlanSaved] = useState(false);
+
+  const savePlan = async () => {
+    setSavingPlan(true);
+    await storageSet(`plan:${client.slug}`, { link: planLink, tekst: planTekst, updated: Date.now() });
+    setSavingPlan(false);
+    setPlanSaved(true);
+    setTimeout(() => setPlanSaved(false), 2000);
+  };
+
   const chartData = client.checkins.map((c) => ({
     label: c.nedelja ? `N${c.nedelja}` : formatDateSr(c.datum),
     tezina: c.tezina ? Number(c.tezina) : null,
@@ -306,6 +327,25 @@ function ClientDetail({ client, onBack }) {
             {client.onboarding ? `Cilj: ${client.onboarding.ciljChip || client.onboarding.cilj || "—"}` : "Bez početnog upitnika"}
           </p>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-accent/20 bg-accent/[0.03] p-4 mb-6">
+        <p className="text-[13px] font-semibold text-gray-900 mb-1">Lični plan za {client.name}</p>
+        <p className="text-[12px] text-gray-400 mb-3">Link ka PDF-u (npr. iz public/dokumenti ili Google Drive) i/ili kratak tekst — vidljivo je klijentu na /moj-plan.</p>
+        <Field label="Link ka planu (opciono)">
+          <TextInput value={planLink} onChange={(e) => setPlanLink(e.target.value)} placeholder="/dokumenti/plan-ana.pdf ili Drive link" />
+        </Field>
+        <Field label="Napomena / tekst plana (opciono)">
+          <TextArea rows={3} value={planTekst} onChange={(e) => setPlanTekst(e.target.value)} placeholder="Npr. Ponedeljak gornji deo, sreda donji deo..." />
+        </Field>
+        <button
+          onClick={savePlan}
+          disabled={savingPlan}
+          className="h-[42px] px-5 rounded-xl text-white font-semibold text-[13.5px] disabled:opacity-50"
+          style={{ background: ACCENT }}
+        >
+          {savingPlan ? "Čuvanje..." : planSaved ? "Sačuvano ✓" : "Sačuvaj plan"}
+        </button>
       </div>
 
       {client.onboarding && (

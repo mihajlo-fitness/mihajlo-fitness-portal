@@ -17,10 +17,12 @@ import {
   ThankYou,
 } from "@/components/ui";
 import { storageSet, uploadPhoto } from "@/lib/storage";
+import { notifyCoach } from "@/lib/notify";
 import { slugify, todayISO } from "@/lib/helpers";
 
 const emptyOnboarding = () => ({
   ime: "",
+  email: "",
   godine: "",
   visina: "",
   tezina: "",
@@ -59,6 +61,9 @@ export default function OnboardingPage() {
         <>
           <Field label="Ime i prezime">
             <TextInput value={data.ime} onChange={(e) => set({ ime: e.target.value })} placeholder="Npr. Ana Anić" />
+          </Field>
+          <Field label="Email (opciono, za podsetnike za check-in)">
+            <TextInput type="email" value={data.email} onChange={(e) => set({ email: e.target.value })} placeholder="tvoj@email.com" />
           </Field>
           <div className="grid grid-cols-3 gap-3">
             <Field label="Godine">
@@ -223,6 +228,10 @@ export default function OnboardingPage() {
       timestamp: Date.now(),
     };
     await storageSet(`client:${slug}:onboarding`, payload);
+    notifyCoach(
+      `Nov klijent popunio upitnik: ${data.ime}`,
+      `${data.ime} je popunio/la početni upitnik.\nCilj: ${data.ciljChip || data.cilj || "—"}\nIskustvo: ${data.iskustvo || "—"}\n\nPogledaj sve detalje u Trenerskom pregledu.`
+    );
     setSubmitting(false);
     setDone(true);
   };

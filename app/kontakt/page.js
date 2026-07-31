@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Mail, Phone, Send, MessageCircle } from "lucide-react";
 import { Field, TextArea, TextInput, ACCENT } from "@/components/ui";
 import { storageSet } from "@/lib/storage";
+import { notifyCoach } from "@/lib/notify";
 
 // 👉 Kontakt podaci trenera — menjaj ovde po potrebi.
 const COACH_CONTACT = {
@@ -19,6 +20,7 @@ export default function KontaktPage() {
 
   const handleSend = async () => {
     await storageSet(`poruka:${Date.now()}`, { ime, poruka, timestamp: Date.now() });
+    notifyCoach(`Nova poruka od ${ime}`, poruka);
     setSent(true);
     setIme("");
     setPoruka("");

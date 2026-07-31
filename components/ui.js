@@ -112,7 +112,6 @@ export function PhotoSlot({ label, file, onChange }) {
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={(e) => onChange(e.target.files?.[0] || null)}
       />

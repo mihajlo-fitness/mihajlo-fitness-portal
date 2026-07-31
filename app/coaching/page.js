@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Salad, Dumbbell, Star, Crown, Check, Send } from "lucide-react";
 import { Field, TextInput, TextArea, ACCENT } from "@/components/ui";
 import { storageSet } from "@/lib/storage";
+import { notifyCoach } from "@/lib/notify";
 import { slugify } from "@/lib/helpers";
 
 // 👉 Kad menjaš cene ili opis paketa, sve se menja ovde na jednom mestu.
@@ -85,6 +86,10 @@ export default function CoachingPage() {
       poruka,
       timestamp: Date.now(),
     });
+    notifyCoach(
+      `Novi zahtev za paket: ${paket?.naziv}`,
+      `${ime} želi paket "${paket?.naziv}" (${paket?.cena} / ${paket?.period}).\n\nNapomena: ${poruka || "—"}\n\nJavi se klijentu oko plaćanja i detalja.`
+    );
     setSubmitting(false);
     setSent(true);
   };

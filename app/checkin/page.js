@@ -16,6 +16,7 @@ import {
   ThankYou,
 } from "@/components/ui";
 import { storageSet, uploadPhoto } from "@/lib/storage";
+import { notifyCoach } from "@/lib/notify";
 import { slugify, todayISO } from "@/lib/helpers";
 
 const emptyCheckin = () => ({
@@ -206,6 +207,10 @@ export default function CheckinPage() {
       timestamp: Date.now(),
     };
     await storageSet(`checkin:${slug}:${Date.now()}`, payload);
+    notifyCoach(
+      `Novi check-in: ${data.ime}`,
+      `${data.ime} je poslao/la check-in za nedelju ${data.nedelja || "?"}.\nTežina: ${data.tezina || "?"} kg\nTreninzi: ${data.treninzi || "?"}\nOsećaj: ${data.osecaj}/10\n\nPogledaj detalje u Trenerskom pregledu.`
+    );
     setSubmitting(false);
     setDone(true);
   };

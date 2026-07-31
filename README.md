@@ -116,6 +116,33 @@ da promeniš status — kruži kroz tri stanja pri svakom kliku.
 U tabu Klijenti, dugme "Izvezi sve check-inove (CSV)" preuzima tabelu
 svih check-inova svih klijenata — otvara se u Excel-u/Google Sheets-u.
 
+## Email obaveštenja (novi check-in / zahtev / poruka)
+Koristi se **Resend** (resend.com) — besplatan nalog:
+1. Napravi nalog na resend.com
+2. **API Keys** → Create API Key → kopiraj ključ (počinje sa `re_...`)
+3. Dodaj env promenljivu `RESEND_API_KEY` (lokalno u `.env.local` i na
+   Vercel-u u Environment Variables)
+4. Bez verifikacije sopstvenog domena, email stiže sa adrese
+   `onboarding@resend.dev` — to je u redu za početak; kasnije se može
+   podesiti da stiže sa tvog domena ako ga budeš imao
+5. Adresa na koju stižu obaveštenja je u `lib/config.js` (`COACH_EMAIL`)
+
+Ako `RESEND_API_KEY` nije podešen, aplikacija normalno radi dalje —
+samo bez slanja email-ova (forme se i dalje čuvaju u bazi kao i pre).
+
+## Lični plan po klijentu
+U Trenerskom pregledu → klikni na klijenta → na vrhu je polje
+"Lični plan za [ime]" gde upišeš link ka PDF-u (npr. iz
+`public/dokumenti/` ili Google Drive) i/ili kratak tekst, pa
+"Sačuvaj plan". Klijent ga vidi na `/moj-plan` kad unese svoje ime
+(tačno onako kako ga je uneo/la u check-in formi).
+
+## Nedeljni podsetnik klijentima
+Ako je `RESEND_API_KEY` podešen, svake nedelje ujutru (cron u
+`vercel.json`) svi klijenti koji su u početnom upitniku ostavili email
+dobijaju kratak podsetnik da popune check-in. Klijenti bez unetog
+email-a se preskaču (email polje u upitniku je opciono).
+
 ## Pokretanje lokalno
 ```bash
 npm install
