@@ -9,8 +9,8 @@ import { useIgUnlocked, IgGate } from "@/components/IgGate";
 // 2. Ovde dodaj red sa "url" koji vodi na taj fajl, npr:
 //    { naziv: "Vodič za merenje obima tela", tip: "PDF", url: "/dokumenti/vodic-merenje.pdf" }
 const DOCS = [
-  { naziv: "50+ najboljih namirnica za mršavljenje  ", tip: "PDF", url: "/dokumenti/ebook mrsavljenje.pdf" },
-  { naziv: "25+ visokoproteinskih recepata", tip: "PDF", url: "/dokumenti/ebook mrsavljenje.pdf" },
+  { naziv: "50+ najboljih namirnica za mršavljenje  ", tip: "PDF", url: "/dokumenti/ebook-mrsavljenje.pdf" },
+  { naziv: "25+ visokoproteinskih recepata", tip: "PDF", url: "/dokumenti/ebook-mrsavljenje.pdf" },
   { naziv: "Uputstvo za tehniku dizanja tegova", tip: "PDF", url: "" },
 ];
 
