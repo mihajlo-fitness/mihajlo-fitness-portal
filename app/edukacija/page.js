@@ -11,10 +11,10 @@ import { useIgUnlocked, IgGate } from "@/components/IgGate";
 //   - Bilo koji drugi URL (članak, Google Drive PDF...) — otvara se
 //     u novom tabu.
 const LEKCIJE = [
-  { naslov: "Kako pravilno raditi čučanj", kategorija: "Tehnika", link: "https://youtu.be/dQw4w9WgXcQ" },
-  { naslov: "Zašto je san ključan za napredak", kategorija: "Regeneracija", link: "https://youtu.be/dQw4w9WgXcQ" },
-  { naslov: "Osnove flexible dieting-a", kategorija: "Ishrana", link: "https://youtu.be/dQw4w9WgXcQ" },
-  { naslov: "Progresivno preopterećenje objašnjeno", kategorija: "Trening", link: "https://youtu.be/dQw4w9WgXcQ" },
+  { naslov: "Kako pravilno raditi čučanj", kategorija: "Tehnika", link: "https://www.muscleandstrength.com/exercises/kettlebell-goblet-squat" },
+  { naslov: "Zašto je san ključan za napredak", kategorija: "Regeneracija", link: "#" },
+  { naslov: "Uskoro", kategorija: "Ishrana", link: "#" },
+  { naslov: "Uskoro", kategorija: "Trening", link: "#" },
 ];
 
 function getYouTubeId(url = "") {
