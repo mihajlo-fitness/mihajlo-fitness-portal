@@ -49,17 +49,50 @@ direktno iz baze bilo kome ko bi ga tehnički pronašao i iskoristio izvan
 same aplikacije. Za osetljivije podatke bi trebalo dodati pravu
 autentifikaciju na nivou baze (Supabase Auth + stroža RLS pravila).
 
-## Edukacija — Instagram "otključavanje" i video lekcije
-`/edukacija` je zaključana dok klijent ne klikne "Zapratio/la sam, otključaj"
-(na časnu reč — Instagram ne dozvoljava aplikacijama da automatski provere
-da li je neko zaista zapratio nalog). Otključavanje se pamti u tom
-pregledaču preko `localStorage`, pa ne mora ponovo svaki put.
+## Edukacija — nova struktura (kategorije → lekcije → pojedinačna lekcija)
+Edukacija više nije ravna lista — sada ima tri nivoa:
+1. `/edukacija` — pregled kategorija (sa pretragom)
+2. `/edukacija/[kategorija]` — lista lekcija u toj kategoriji
+3. `/edukacija/[kategorija]/[lekcija]` — pojedinačna lekcija (video, ključne tačke, prethodna/sledeća, slične lekcije)
 
-- Instagram korisničko ime se menja na jednom mestu: `lib/config.js`
-- Lekcije se dodaju u `LEKCIJE` niz u `app/edukacija/page.js`. Ako je
-  `link` YouTube URL (`youtu.be/...` ili `youtube.com/watch?v=...`),
-  video se automatski prikazuje kao ugrađeni plejer unutar aplikacije
-  (klijent ne napušta portal). Bilo koji drugi link se otvara u novom tabu.
+**Sve se menja na jednom mestu:** `lib/edukacija-data.js`
+
+Da dodaš **novu lekciju** u postojeću kategoriju: nađi tu kategoriju u
+`KATEGORIJE` nizu, dodaj novi objekat u njen `lekcije` niz:
+```javascript
+{
+  slug: "jedinstven-slug-lekcije",   // koristi se u URL-u
+  naslov: "Naslov lekcije",
+  trajanje: "5:12",                  // mm:ss
+  opis: "Kratak opis lekcije.",
+  kljucneTacke: ["Tačka 1", "Tačka 2", "Tačka 3"],
+  video: "https://youtu.be/TVOJ-VIDEO-ID",  // ili "#" bez videa
+}
+```
+
+Da dodaš **potpuno novu kategoriju**, dodaj novi objekat u `KATEGORIJE`
+niz sa istom strukturom (`slug`, `emoji`, `naziv`, `opis`, `lekcije`).
+
+Broj lekcija na kartici kategorije se **računa automatski** iz dužine
+niza — nikad ga ne menjaš ručno, ne može da bude netačan.
+
+I ova sekcija je i dalje iza Instagram "otključavanja" (isto kao
+Dokumenti) — nema potrebe za dodatnim podešavanjem, radi automatski.
+
+### Dodatne funkcije (progres, "Novo", nivo)
+- **Praćenje napretka** — svaka odgledana lekcija se pamti po klijentu
+  (localStorage), prikazuje se kao "3/12 odgledano" + traka napretka na
+  kartici kategorije, kvačica na kartici lekcije, i kartica
+  "Nastavi gde si stao/la" na vrhu glavne Edukacija strane. Ne treba
+  ništa da podešavaš — radi automatski čim neko odgleda lekciju.
+- **"Novo" bedž** — dodaj lekciji opciono polje `dodato: "2026-08-01"`
+  (format GGGG-MM-DD) u `lib/edukacija-data.js`; bedž se sam prikazuje
+  7 dana od tog datuma, pa nestaje. Lekcije bez ovog polja nikad ne
+  pokazuju bedž — ne moraš ga popunjavati ako ne želiš.
+- **Nivo (Početnik/Srednji/Napredan)** — dodaj lekciji opciono polje
+  `nivo: "Početnik"` u istom fajlu. Takođe potpuno opciono.
+- **Ukupno trajanje po kategoriji** — računa se samo automatski iz
+  zbira `trajanje` polja svih lekcija, ne treba ga ručno unositi.
 
 ## Kako da menjaš sadržaj bez terminala (preko GitHub sajta)
 Za ovakve male izmene (dodavanje lekcije, menjanje linka, dodavanje PDF-a)
