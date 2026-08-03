@@ -4,12 +4,14 @@ import {
   ClipboardCheck,
   TrendingUp,
   BookOpen,
+  Calculator,
   ChevronRight,
 } from "lucide-react";
 
 const QUICK_LINKS = [
   { href: "/checkin", label: "Nedeljni check-in", desc: "Popuni formu za ovu nedelju", icon: ClipboardCheck, filled: true },
   { href: "/napredak", label: "Napredak", desc: "Težina, mere i fotografije kroz vreme", icon: TrendingUp },
+  { href: "/kalkulator", label: "Fitness kalkulator", desc: "Besplatna procena kalorija i makroa", icon: Calculator },
   { href: "/coaching", label: "Paketi & Coaching", desc: "Plan ishrane, treninga ili puni coaching", icon: Sparkles },
   { href: "/edukacija", label: "Edukacija", desc: "Video lekcije i korisni saveti", icon: BookOpen },
 ];

@@ -224,6 +224,21 @@ pretrage ("fitness trener Beograd" i slično) trebalo bi vremenom dodati
 i sadržaj koji ljudi zapravo guglaju (npr. blog/članci) — to je veći,
 odvojeni poduhvat ako ti ikad zatreba.
 
+## Besplatni fitness kalkulator
+`/kalkulator` — javno dostupna stranica (nije iza Instagram gate-a, za
+razliku od Edukacije/Dokumenata — namerno, jer služi kao alat za
+privlačenje novih posetilaca).
+
+- Proračuni (BMR, TDEE, kalorije, makroi, BMI) su u `lib/kalkulator.js`,
+  odvojeno od UI-a — čista matematika, lako proverljiva i izmenljiva
+- BMR: Mifflin-St Jeor jednačina
+- Cilj (mršavljenje/održavanje/mišićna masa) koristi umeren
+  deficit/suficit (20%/0%/10%), nikad ekstreman, sa bezbednosnim
+  minimumom kalorija ispod kog preporuka nikad ne ide
+- BMI se prikazuje sa obaveznim upozorenjem da ne uzima u obzir sastav
+  tela i ne treba da bude jedini pokazatelj forme
+- Na dnu rezultata je CTA ka `/coaching` (postojeća stranica paketa)
+
 ## Pokretanje lokalno
 ```bash
 npm install
