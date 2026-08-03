@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, Check, ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
 import { useIgUnlocked, IgGate } from "@/components/IgGate";
 import { getKategorija, getLekcija } from "@/lib/edukacija-data";
-import { getYouTubeId } from "@/lib/helpers";
+import { getVideoEmbed } from "@/lib/helpers";
 import { markLessonWatched } from "@/lib/progress";
 
 export default function LekcijaPage({ params }) {
@@ -38,7 +38,7 @@ export default function LekcijaPage({ params }) {
   const prethodna = idx > 0 ? kategorija.lekcije[idx - 1] : null;
   const sledeca = idx < kategorija.lekcije.length - 1 ? kategorija.lekcije[idx + 1] : null;
   const slicne = kategorija.lekcije.filter((l) => l.slug !== lekcija.slug).slice(0, 3);
-  const ytId = getYouTubeId(lekcija.video);
+  const video = getVideoEmbed(lekcija.video);
 
   return (
     <div className="max-w-md md:max-w-2xl mx-auto px-6 py-10 animate-fade-in">
@@ -49,15 +49,27 @@ export default function LekcijaPage({ params }) {
         <ArrowLeft size={18} />
       </button>
 
-      <div className="rounded-[28px] overflow-hidden mb-6 bg-black relative aspect-video">
-        {ytId ? (
+      <div className="rounded-[28px] overflow-hidden mb-6 bg-black relative aspect-[9/16] max-w-[420px] mx-auto">
+        {video?.type === "youtube" || video?.type === "vimeo" ? (
           <iframe
-            src={`https://www.youtube.com/embed/${ytId}`}
+            src={video.embedUrl}
             title={lekcija.naslov}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="w-full h-full"
           />
+        ) : video?.type === "direct" ? (
+          <video src={video.embedUrl} controls className="w-full h-full" />
+        ) : video?.type === "link" ? (
+          <a
+            href={video.embedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-full bg-gradient-to-br from-accent/25 to-accent/5 flex flex-col items-center justify-center gap-3"
+          >
+            <PlayCircle size={48} className="text-white/90" />
+            <span className="text-white/90 text-[14px] font-semibold">Otvori video</span>
+          </a>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-accent/25 to-accent/5 flex items-center justify-center">
             <PlayCircle size={48} className="text-white/80" />

@@ -76,6 +76,19 @@ niz sa istom strukturom (`slug`, `emoji`, `naziv`, `opis`, `lekcije`).
 Broj lekcija na kartici kategorije se **računa automatski** iz dužine
 niza — nikad ga ne menjaš ručno, ne može da bude netačan.
 
+### Ne mora da bude YouTube
+Polje `video` prepoznaje automatski:
+- **YouTube** link (`youtu.be/...` ili `youtube.com/watch?v=...`) — ugrađeni plejer
+- **Vimeo** link (`vimeo.com/123456789`) — ugrađeni plejer
+- **Direktan video fajl** (link koji se završava na `.mp4`, `.webm` ili `.mov`) — ugrađeni HTML5 plejer sa kontrolama
+- **Bilo koji drugi link** (npr. Google Drive, Dropbox share link) — prikazuje se dugme "Otvori video" koje ga otvara u novom tabu (ne može svaki link da se ugradi direktno)
+
+Preporuka: **YouTube kao "Unlisted"** (nije javno na YouTube pretrazi/kanalu,
+ali radi normalno kad se ugradi na sajt) je najjednostavnija i besplatna
+opcija bez ograničenja veličine fajla. Direktno otpremanje video fajlova
+u sam projekat/GitHub se ne preporučuje — video fajlovi su preveliki za
+git i usporavaju/limitiraju ceo repozitorijum.
+
 I ova sekcija je i dalje iza Instagram "otključavanja" (isto kao
 Dokumenti) — nema potrebe za dodatnim podešavanjem, radi automatski.
 
