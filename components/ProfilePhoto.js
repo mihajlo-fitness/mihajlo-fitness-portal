@@ -10,8 +10,11 @@ export default function ProfilePhoto({ className = "" }) {
 
   if (greska) {
     return (
-      <div className={"bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center " + className}>
-        <Dumbbell size={40} className="text-accent/40" />
+      <div
+        className={"flex items-center justify-center " + className}
+        style={{ background: "#5170ff" }}
+      >
+        <Dumbbell size={44} className="text-white" />
       </div>
     );
   }

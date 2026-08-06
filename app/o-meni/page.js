@@ -10,20 +10,19 @@ export default function OMeniPage() {
       <p className="text-[13px] font-semibold tracking-widest text-accent uppercase mb-2">O meni</p>
       <h1 className="text-[28px] md:text-[34px] font-bold text-gray-900 tracking-tight mb-6">Ćao, ja sam Mihajlo 👋</h1>
 
-      {/* 👉 Zameni ovaj tekst svojom pravom pričom — ostavi ga da zvuči
-         kao ti, ne kao generički marketing tekst. */}
       <div className="space-y-5 text-[15px] text-gray-600 leading-relaxed mb-10">
         <p>
-          Pre nekoliko godina, borio sam se sa sopstvenom težinom kao i mnogi ljudi koje danas treniram. Skinuo sam
-          25 kg — ne kroz restriktivne dijete ili brza rešenja, već kroz sistem, strpljenje i navike koje traju.
+          Pre nekoliko godina i sam sam se borio sa viškom kilograma. Skinuo sam 25 kg — bez ekstremnih dijeta i
+          brzih rešenja, već kroz kalorijski deficit, trening, strpljenje i navike koje mogu da se održe dugoročno.
         </p>
         <p>
-          Danas sam sertifikovani personalni trener, fokusiran na održivo mršavljenje i izgradnju navika koje
-          ostaju i posle poslednjeg treninga u planu. Ne verujem u prečice — verujem u dobar sistem i doslednost.
+          Danas sam sertifikovani personalni trener i pomažem ljudima da smršaju, izgrade bolje navike i nauče kako
+          da rezultate zadrže dugoročno.
         </p>
+        <p>Ne verujem u prečice. Verujem u dobar plan, doslednost i prilagođavanje plana stvarnom životu.</p>
         <p>
-          Napravio sam ovaj portal da klijentima olakšam tačno ono što je meni nedostajalo kad sam počinjao: jasan
-          uvid u napredak, plan kome mogu da veruju, i trenera koji je stvarno tu, ne samo u prvoj nedelji.
+          Napravio sam ovaj portal da klijentima pružim ono što je meni najviše nedostajalo kada sam počinjao —
+          jasan plan, praćenje napretka i trenera koji je tu i kada stvari ne idu savršeno.
         </p>
       </div>
 
