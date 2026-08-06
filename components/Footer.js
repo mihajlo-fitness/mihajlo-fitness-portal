@@ -1,4 +1,5 @@
-import { Instagram, Mail } from "lucide-react";
+import Link from "next/link";
+import { Instagram, User, Mail } from "lucide-react";
 import { INSTAGRAM_URL, INSTAGRAM_HANDLE, COACH_EMAIL } from "@/lib/config";
 
 export default function Footer() {
@@ -9,6 +10,12 @@ export default function Footer() {
           © {new Date().getFullYear()} Mihajlo Fitness Coach. Sva prava zadržana.
         </p>
         <div className="flex items-center gap-5">
+          <Link
+            href="/o-meni"
+            className="flex items-center gap-1.5 text-[12.5px] font-medium text-gray-400 hover:text-accent transition-colors"
+          >
+            <User size={14} /> O meni
+          </Link>
           <a
             href={INSTAGRAM_URL}
             target="_blank"
