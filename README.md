@@ -76,6 +76,12 @@ niz sa istom strukturom (`slug`, `emoji`, `naziv`, `opis`, `lekcije`).
 Broj lekcija na kartici kategorije se **računa automatski** iz dužine
 niza — nikad ga ne menjaš ručno, ne može da bude netačan.
 
+### Cover (sličica) na kartici lekcije
+Trenutno kartice lekcija prikazuju jednostavan plavi placeholder (bez
+prave sličice) — ovo je namerna odluka, ne nedostatak. Funkcija za
+automatsko povlačenje YouTube sličice postoji u `lib/helpers.js`
+(`getYouTubeThumbnail`) ako je ikad budeš želeo da uključiš.
+
 ### Ne mora da bude YouTube
 Polje `video` prepoznaje automatski:
 - **YouTube** link (`youtu.be/...` ili `youtube.com/watch?v=...`) — ugrađeni plejer
@@ -238,6 +244,33 @@ privlačenje novih posetilaca).
 - BMI se prikazuje sa obaveznim upozorenjem da ne uzima u obzir sastav
   tela i ne treba da bude jedini pokazatelj forme
 - Na dnu rezultata je CTA ka `/coaching` (postojeća stranica paketa)
+
+## Vizuelno dovršavanje (favicon, OG slika, fotografija, footer, 404)
+
+**Favicon i ikonica** — `app/icon.png` i `app/apple-icon.png`, prepoznaje
+ih Next.js automatski, ne treba ništa dodatno da podešavaš.
+
+**Slika za deljenje linka (Open Graph)** — `app/opengraph-image.png`,
+prikazuje se automatski kad neko podeli link sajta na Instagramu,
+WhatsApp-u, itd. Next.js je automatski prepoznaje, bez dodatnog koda.
+
+**Tvoja fotografija na Početnoj** — trenutno se prikazuje lep placeholder
+(ikonica) dok ne dodaš pravu sliku. Da je dodaš:
+1. Otpremi svoju fotografiju preko GitHub sajta (isti postupak kao PDF-ovi
+   ranije) u folder `public/`
+2. Nazovi je **tačno** `mihajlo-photo.jpg` (ako je `.png`, promeni u
+   `components/ProfilePhoto.js` putanju `/mihajlo-photo.jpg` u
+   `/mihajlo-photo.png`)
+3. Čim se objavi, slika se automatski pojavljuje na Početnoj — ne
+   treba dalje menjanje koda
+
+**Footer** — `components/Footer.js`, prikazuje se na dnu svake strane,
+sa linkom ka Instagramu i email kontaktu (povlači iz `lib/config.js`,
+isti podaci koji se koriste svuda drugde).
+
+**Prilagođena 404 strana** — `app/not-found.js`, prikazuje se automatski
+kad neko otvori link koji ne postoji na sajtu, u istom vizuelnom stilu
+kao ostatak portala.
 
 ## Pokretanje lokalno
 ```bash
