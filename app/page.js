@@ -7,7 +7,6 @@ import {
   Calculator,
   ChevronRight,
 } from "lucide-react";
-import ProfilePhoto from "@/components/ProfilePhoto";
 
 const QUICK_LINKS = [
   { href: "/checkin", label: "Nedeljni check-in", desc: "Popuni formu za ovu nedelju", icon: ClipboardCheck, filled: true },
@@ -20,13 +19,9 @@ const QUICK_LINKS = [
 export default function HomePage() {
   return (
     <div className="max-w-md md:max-w-3xl mx-auto px-6 py-10 md:py-14 animate-fade-in">
-      <div className="flex items-center gap-4 mb-6">
-        <ProfilePhoto className="h-16 w-16 rounded-2xl shrink-0" />
-        <div>
-          <p className="text-[13px] font-semibold tracking-widest text-accent uppercase">Klijentski portal</p>
-          <p className="text-[15px] font-semibold text-gray-900">Mihajlo Fitness Coach</p>
-        </div>
-      </div>
+      <p className="text-[13px] font-semibold tracking-widest text-accent uppercase mb-3">
+        Klijentski portal
+      </p>
       <h1 className="text-[32px] md:text-[40px] leading-[1.15] font-bold text-gray-900 tracking-tight mb-4">
         Dobrodošao/la 👋
       </h1>
