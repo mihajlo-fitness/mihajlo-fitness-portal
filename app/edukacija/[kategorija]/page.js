@@ -44,8 +44,12 @@ export default function KategorijaPage({ params }) {
           <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">{kategorija.naziv}</h1>
           <p className="text-[13.5px] text-gray-400 flex items-center gap-2">
             <span>{kategorija.lekcije.length} {kategorija.lekcije.length === 1 ? "lekcija" : "lekcije"}</span>
-            <span>·</span>
-            <span className="flex items-center gap-1"><Clock size={12} /> {ukupnoTrajanjeKategorije(kategorija)}</span>
+            {ukupnoTrajanjeKategorije(kategorija) && (
+              <>
+                <span>·</span>
+                <span className="flex items-center gap-1"><Clock size={12} /> {ukupnoTrajanjeKategorije(kategorija)}</span>
+              </>
+            )}
             {progressReady && watchedCountFor(kategorija.slug) > 0 && (
               <>
                 <span>·</span>
@@ -61,6 +65,7 @@ export default function KategorijaPage({ params }) {
         {kategorija.lekcije.map((lek) => {
           const watched = progressReady && isWatched(kategorija.slug, lek.slug);
           const novo = jeNovo(lek);
+          const imaVideo = Boolean(lek.video && lek.video !== "#");
           return (
             <Link
               key={lek.slug}
@@ -69,9 +74,15 @@ export default function KategorijaPage({ params }) {
             >
               <div className="h-40 bg-gradient-to-br from-accent/10 to-accent/[0.03] flex items-center justify-center relative">
                 <PlayCircle size={34} className="text-accent/70 transition-transform duration-300 group-hover:scale-110" />
-                <span className="absolute bottom-3 right-3 flex items-center gap-1 text-[11.5px] font-semibold text-white bg-black/55 px-2.5 py-1 rounded-full">
-                  <Clock size={11} /> {lek.trajanje}
-                </span>
+                {imaVideo ? (
+                  <span className="absolute bottom-3 right-3 flex items-center gap-1 text-[11.5px] font-semibold text-white bg-black/55 px-2.5 py-1 rounded-full">
+                    <Clock size={11} /> {lek.trajanje}
+                  </span>
+                ) : (
+                  <span className="absolute bottom-3 right-3 text-[11.5px] font-semibold text-gray-500 bg-white/90 px-2.5 py-1 rounded-full">
+                    Uskoro
+                  </span>
+                )}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5">
                   {novo && (
                     <span className="text-[10.5px] font-bold text-white bg-accent px-2.5 py-1 rounded-full uppercase tracking-wide">

@@ -81,19 +81,21 @@ export default function EdukacijaPage() {
                   <p className="text-[18px] font-bold text-gray-900 tracking-tight mb-1.5">{kat.naziv}</p>
                   <p className="text-[13.5px] text-gray-400 leading-relaxed mb-3">{kat.opis}</p>
 
-                  <div className="flex items-center gap-3 text-[12.5px] text-gray-400 mb-3">
-                    <span className="flex items-center gap-1">
-                      <Clock size={11} /> {ukupnoTrajanjeKategorije(kat)}
-                    </span>
-                    {watched > 0 && (
-                      <>
-                        <span>·</span>
+                  {(ukupnoTrajanjeKategorije(kat) || watched > 0) && (
+                    <div className="flex items-center gap-3 text-[12.5px] text-gray-400 mb-3">
+                      {ukupnoTrajanjeKategorije(kat) && (
+                        <span className="flex items-center gap-1">
+                          <Clock size={11} /> {ukupnoTrajanjeKategorije(kat)}
+                        </span>
+                      )}
+                      {ukupnoTrajanjeKategorije(kat) && watched > 0 && <span>·</span>}
+                      {watched > 0 && (
                         <span className="font-semibold text-accent">
                           {watched}/{total} odgledano
                         </span>
-                      </>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
 
                   {watched > 0 && (
                     <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden mb-3">

@@ -82,12 +82,14 @@ export default function LekcijaPage({ params }) {
       </p>
       <h1 className="text-[26px] font-bold text-gray-900 tracking-tight leading-snug mb-2">{lekcija.naslov}</h1>
       <div className="flex items-center gap-2.5 mb-6">
-        <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-400">
-          <Clock size={13} /> {lekcija.trajanje}
-        </span>
+        {lekcija.video && lekcija.video !== "#" && (
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-400">
+            <Clock size={13} /> {lekcija.trajanje}
+          </span>
+        )}
         {lekcija.nivo && (
           <>
-            <span className="text-gray-300">·</span>
+            {lekcija.video && lekcija.video !== "#" && <span className="text-gray-300">·</span>}
             <span className="text-[12px] font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{lekcija.nivo}</span>
           </>
         )}
@@ -155,7 +157,7 @@ export default function LekcijaPage({ params }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[14px] font-semibold text-gray-900 truncate">{lek.naslov}</p>
-                  <p className="text-[12px] text-gray-400">{lek.trajanje}</p>
+                  <p className="text-[12px] text-gray-400">{lek.video && lek.video !== "#" ? lek.trajanje : "Uskoro"}</p>
                 </div>
                 <ChevronRight size={16} className="text-gray-300 shrink-0" />
               </Link>
