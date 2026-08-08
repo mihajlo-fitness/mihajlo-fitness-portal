@@ -272,6 +272,24 @@ isti podaci koji se koriste svuda drugde).
 kad neko otvori link koji ne postoji na sajtu, u istom vizuelnom stilu
 kao ostatak portala.
 
+## "O meni" — redizajnirana, tamna premium sekcija
+Ova jedna stranica namerno koristi **drugu paletu** od ostatka sajta
+(crna pozadina, plava `#2563eb`, glassmorphism kartice) — cilj joj je
+da odmah izgradi poverenje kroz interaktivni before/after prikaz, ne
+da prati identičan izgled kao ostale, svetle stranice.
+
+**Interaktivni before/after slider** (`components/BeforeAfterSlider.js`)
+— korisnik prevlači da uporedi fotografije. Očekuje dve fotografije:
+- `public/mihajlo-pre.jpg`
+- `public/mihajlo-posle.jpg`
+
+Isti postupak kao za ostale fotografije/PDF-ove — otpremiš preko GitHub
+sajta u `public` folder, tačno pod ta dva imena. Dok ih nema, prikazuje
+se uredan placeholder umesto polomljene slike.
+
+Tekst priče i highlight box (4 stavke) menjaš direktno u
+`app/o-meni/page.js` — sve je čist tekst, lako za izmenu.
+
 ## Pokretanje lokalno
 ```bash
 npm install
