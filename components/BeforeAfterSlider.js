@@ -76,7 +76,7 @@ export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
             </div>
           ) : (
             <img
-              src="/mihajlo-posle.jpg"
+              src="/mihajlo-posle.jpeg"
               alt="Mihajlo posle transformacije"
               onError={() => setPosleGreska(true)}
               className="w-full h-full object-cover"
@@ -96,7 +96,7 @@ export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
             </div>
           ) : (
             <img
-              src="/mihajlo-pre.jpg"
+              src="/mihajlo-pre.jpeg"
               alt="Mihajlo pre transformacije"
               onError={() => setPreGreska(true)}
               className="h-full object-cover"

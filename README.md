@@ -280,8 +280,8 @@ da prati identičan izgled kao ostale, svetle stranice.
 
 **Interaktivni before/after slider** (`components/BeforeAfterSlider.js`)
 — korisnik prevlači da uporedi fotografije. Očekuje dve fotografije:
-- `public/mihajlo-pre.jpg`
-- `public/mihajlo-posle.jpg`
+- `public/mihajlo-pre.jpeg`
+- `public/mihajlo-posle.jpeg`
 
 Isti postupak kao za ostale fotografije/PDF-ove — otpremiš preko GitHub
 sajta u `public` folder, tačno pod ta dva imena. Dok ih nema, prikazuje
