@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Dumbbell } from "lucide-react";
-import { NAV_ITEMS, COACH_ITEM } from "@/lib/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Dumbbell, LogOut } from "lucide-react";
+import { PORTAL_NAV, COACH_ITEM } from "@/lib/navigation";
+import { useAuth } from "@/lib/auth";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { profile, isCoach, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-gray-100 px-4 py-6">
@@ -16,12 +25,12 @@ export default function Sidebar() {
         </div>
         <div>
           <p className="text-[13.5px] font-semibold text-gray-900 leading-tight">Mihajlo Fitness Coach</p>
-          <p className="text-[11px] text-gray-400">Klijentski portal</p>
+          <p className="text-[11px] text-gray-400">{profile?.ime ? `Zdravo, ${profile.ime}` : "Tvoj prostor"}</p>
         </div>
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map((item) => {
+        {PORTAL_NAV.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (
@@ -40,16 +49,27 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <Link
-        href={COACH_ITEM.href}
-        className={
-          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium mt-4 border-t border-gray-100 pt-5 " +
-          (pathname === COACH_ITEM.href ? "text-accent" : "text-gray-400 hover:text-gray-700")
-        }
-      >
-        <COACH_ITEM.icon size={16} />
-        {COACH_ITEM.label}
-      </Link>
+      <div className="border-t border-gray-100 pt-4 mt-4 space-y-1">
+        {isCoach && (
+          <Link
+            href={COACH_ITEM.href}
+            className={
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium " +
+              (pathname === COACH_ITEM.href ? "text-accent" : "text-gray-400 hover:text-gray-700")
+            }
+          >
+            <COACH_ITEM.icon size={16} />
+            {COACH_ITEM.label}
+          </Link>
+        )}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-400 hover:text-gray-700"
+        >
+          <LogOut size={16} />
+          Odjava
+        </button>
+      </div>
     </aside>
   );
 }

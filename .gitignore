@@ -1,6 +1,22 @@
-node_modules
-.next
-out
-.env*.local
+# Zavisnosti
+/node_modules
+
+# Next.js build izlaz
+/.next/
+/out/
+
+# Tajne promenljive — NIKAD ne otpremaj ove fajlove na GitHub.
+# Sadrže SUPABASE_SERVICE_ROLE_KEY i druge ključeve.
+.env
+.env.local
+.env.*.local
+
+# Sistemski/editor fajlovi
 .DS_Store
-*.log
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vercel
+.vercel

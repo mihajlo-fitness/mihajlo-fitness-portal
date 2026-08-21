@@ -1,10 +1,13 @@
 // Next.js automatski servira ovo kao /sitemap.xml
-// Napomena: zameni "https://tvoj-sajt.vercel.app" tvojim pravim URL-om
-// (ili sopstvenim domenom kad ga budeš imao).
-const BASE_URL = "https://mihajlo-fitness-portal.vercel.app";
+// Koristi NEXT_PUBLIC_SITE_URL env promenljivu ako je podešena (preporučeno
+// kad povežeš pravi domen), u suprotnom pada na mihajlofitness.fit.
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mihajlofitness.fit";
 
 export default function sitemap() {
-  const routes = ["", "/coaching", "/edukacija", "/kontakt", "/faq"];
+  // Samo javne, indeksabilne stranice — portal rute (checkin, napredak,
+  // /app/edukacija, /app/kontakt...) su iza login-a i ne treba da budu
+  // u sitemap-u. /edukacija i /kontakt ovde su njihove JAVNE verzije.
+  const routes = ["", "/o-meni", "/coaching", "/edukacija", "/kalkulator", "/faq", "/kontakt"];
 
   return routes.map((route) => ({
     url: `${BASE_URL}${route}`,
