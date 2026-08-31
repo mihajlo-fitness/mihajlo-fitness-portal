@@ -1,19 +1,28 @@
 import { NextResponse } from "next/server";
-import { storageList, storageGet } from "@/lib/storage";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 // Vercel Cron pogađa ovu rutu svake nedelje ujutru (vidi vercel.json).
 // Prolazi kroz sve klijente koji su u početnom upitniku ostavili email
 // i šalje im kratak podsetnik da popune nedeljni check-in.
+//
+// Koristi ADMIN klijent — ova ruta mora da vidi SVE klijente (bez obzira
+// na to ko je "trenutno ulogovan", jer nema ulogovanog korisnika u cron
+// kontekstu), pa RLS ovde namerno zaobilazimo preko service role ključa.
 export async function GET() {
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json({ ok: false, skipped: true });
   }
 
-  const keys = await storageList("client:");
+  const admin = createSupabaseAdminClient();
+  if (!admin) return NextResponse.json({ ok: false, skipped: true });
+
+  const { data: rows, error } = await admin.from("kv_store").select("key, value").like("key", "client:%");
+  if (error) return NextResponse.json({ ok: false, error: error.message });
+
   let sent = 0;
 
-  for (const key of keys) {
-    const val = await storageGet(key);
+  for (const row of rows || []) {
+    const val = row.value;
     if (!val?.email) continue;
 
     try {

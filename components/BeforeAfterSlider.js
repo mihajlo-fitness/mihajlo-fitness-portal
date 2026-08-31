@@ -4,10 +4,11 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
- * Interaktivni before/after slider. Očekuje fotografije na:
- *   /public/mihajlo-pre.jpg
- *   /public/mihajlo-posle.jpg
- * Dok ih ne dodaš, prikazuje elegantan placeholder umesto polomljene slike.
+ * Interaktivni before/after slider sa prevlačenjem. Fotografije
+ * (/public/mihajlo-pre.jpeg, /public/mihajlo-posle.jpeg) su poravnate
+ * tako da je glava/telo na približno istoj poziciji na obe — zato
+ * prelaz pri prevlačenju izgleda prirodno, kao "ista poza, drugo telo",
+ * ne kao skok između dve nepovezane fotografije.
  */
 export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
   const [pozicija, setPozicija] = useState(50);
@@ -38,19 +39,27 @@ export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
   useEffect(() => {
     if (!prevlaci) return;
     const onMove = (e) => {
+      // KLJUČNO za mobilni: preventDefault() sprečava da browser
+      // pokuša istovremeno da skroluje stranicu dok prevlačiš prstom
+      // levo-desno — to je bio uzrok "trzavog" ponašanja na iPhone-u.
+      if (e.touches) e.preventDefault();
       const x = e.touches ? e.touches[0].clientX : e.clientX;
       azurirajPoziciju(x);
     };
     const onUp = () => setPrevlaci(false);
     window.addEventListener("mousemove", onMove);
-    window.addEventListener("touchmove", onMove);
+    // { passive: false } je OBAVEZNO da bi preventDefault() iznad uopšte
+    // imao efekta na touchmove — bez ovoga, iOS Safari ga ignoriše.
+    window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("mouseup", onUp);
     window.addEventListener("touchend", onUp);
+    window.addEventListener("touchcancel", onUp);
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("mouseup", onUp);
       window.removeEventListener("touchend", onUp);
+      window.removeEventListener("touchcancel", onUp);
     };
   }, [prevlaci, azurirajPoziciju]);
 
@@ -59,11 +68,15 @@ export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
       <div
         ref={containerRef}
         className="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden select-none shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/10"
+        style={{ touchAction: "none" }}
         onMouseDown={(e) => {
           setPrevlaci(true);
           azurirajPoziciju(e.clientX);
         }}
         onTouchStart={(e) => {
+          // preventDefault ovde takođe sprečava da prvi dodir odmah
+          // pokrene skrolovanje stranice pre nego što prevlačenje počne.
+          e.preventDefault();
           setPrevlaci(true);
           azurirajPoziciju(e.touches[0].clientX);
         }}
@@ -119,7 +132,7 @@ export default function BeforeAfterSlider({ badge = "-25 KG TRANSFORMACIJA" }) {
 
         {/* Premium badge */}
         <div
-          className="absolute bottom-5 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-[13px] font-bold tracking-wide backdrop-blur-md border border-white/20 shadow-lg"
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-[13px] font-bold tracking-wide backdrop-blur-md border border-white/20 shadow-lg whitespace-nowrap"
           style={{ background: "rgba(37,99,235,0.85)" }}
         >
           {badge}

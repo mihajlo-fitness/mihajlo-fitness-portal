@@ -1,53 +1,88 @@
-# Mihajlo Fitness Coach — Klijentski portal
+# Mihajlo Fitness Coach — javni sajt + klijentski portal
 
-Next.js 14 (App Router) + Tailwind CSS. Mobile-first, responzivan portal za klijente.
+Next.js 14 (App Router) + Tailwind CSS + Supabase (Auth + baza + Storage).
+Mobile-first, sa jasno odvojenim javnim sajtom i klijentskim portalom.
 
-## Sekcije
-- `/` — Početna
-- `/onboarding` — Početni upitnik (popunjava se jednom)
+## Struktura ruta
+Javni sajt (`app/(public)/`, svako ga vidi, bez prijave):
+- `/` — Landing page (hero, before/after, paketi, kalkulator, FAQ)
+- `/o-meni` — Priča i transformacija
+- `/coaching` — Paketi & zahtev za saradnju
+- `/kalkulator` — Besplatan fitness kalkulator
+- `/faq` — Najčešća pitanja
+
+Klijentski portal (`app/(portal)/`, zahteva prijavu — vidi Auth ispod):
+- `/app` — Dashboard (status check-ina, feedback trenera, plan, napredak)
+- `/onboarding` — Početni upitnik (jednom)
 - `/checkin` — Nedeljni check-in
-- `/napredak` — Napredak klijenta (grafik težine, mere, istorija)
-- `/coaching` — Paketi & Coaching (4 paketa + zahtev)
+- `/napredak` — Napredak (samo tvoji podaci)
+- `/moj-plan` — Lični plan
 - `/edukacija` — Edukacija
-- `/kontakt` — Kontakt sa trenerom
-- `/faq` — FAQ
 - `/dokumenti` — Dokumenti za preuzimanje
-- `/trener` — Trenerski pregled (dashboard klijenata)
+- `/kontakt` — Kontakt sa trenerom
+
+Trener (`app/trener/`, zahteva prijavu I ulogu "coach"):
+- `/trener` — Dashboard klijenata, zahteva, poruka, plan i feedback po klijentu
+
+## Auth (ko se prijavljuje i kako)
+Nema lozinki. Svako (klijent ili trener) se prijavljuje preko **magic link**-a:
+1. Ode na `/prijava`, unese email.
+2. Dobije mejl sa linkom — klikne, uloguje se, sesija traje dok se ručno ne odjavi.
+3. Da li je neko klijent ili trener određuje kolona `role` u tabeli `profiles`
+   (podrazumevano `client`, ti ručno postaviš `coach` za sebe — pogledaj
+   `supabase/schema.sql`, poslednji komentar u fajlu, tačan SQL za to).
+
+`middleware.js` proverava sesiju na svakom zahtevu ka portal/trener rutama
+i preusmerava na `/prijava` ako nema validne sesije.
 
 ## Dodavanje nove sekcije
-1. Napravi folder u `app/` (npr. `app/nova-sekcija/`) i u njemu `page.js`.
-2. Dodaj stavku u `lib/navigation.js` — automatski se pojavljuje u navigaciji.
+1. Napravi folder u `app/(public)/` (javno) ili `app/(portal)/` (iza prijave), sa `page.js` unutra.
+2. Dodaj stavku u `lib/navigation.js` (`PUBLIC_NAV` ili `PORTAL_NAV`).
+3. Ako je portal ruta, dodaj njen path u `PORTAL_PATHS` niz u `middleware.js`.
 
 ## Baza podataka (Supabase)
-Podaci (check-inovi, upitnici) se čuvaju preko `lib/storage.js`:
-- Ako su podešene env promenljive `NEXT_PUBLIC_SUPABASE_URL` i
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, podaci idu u Supabase — deljeni su
-  i vidljivi sa bilo kog uređaja (trener vidi sve klijente).
-- Ako te promenljive nisu podešene, aplikacija se automatski vraća na
-  `localStorage` (podaci samo na tom uređaju) — korisno za brzo
-  testiranje bez podešavanja baze.
+Podaci (check-inovi, upitnici, planovi, feedback) čuvaju se preko `lib/storage.js`
+u `kv_store` tabeli, zaštićenoj RLS pravilima (svako vidi samo svoje podatke,
+trener vidi sve). Ako env promenljive `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`
+nisu podešene, aplikacija se vraća na `localStorage` (samo za razvoj/testiranje
+— bez prave prijave portal rute tada NISU zaštićene).
 
-### Podešavanje Supabase-a
+### Podešavanje Supabase-a (jednokratno)
 1. Napravi nalog na supabase.com i novi projekat.
-2. U **SQL Editor**-u pokreni sadržaj fajla `supabase/schema.sql`.
-3. U **Project Settings → API** kopiraj `Project URL` i `anon public` ključ.
+2. U **SQL Editor**-u pokreni **ceo** sadržaj fajla `supabase/schema.sql`.
+3. U **Project Settings → API** kopiraj `Project URL`, `anon public` ključ,
+   i `service_role` ključ (klikni "Reveal" da ga vidiš).
 4. Lokalno: kopiraj `.env.local.example` u `.env.local` i upiši te vrednosti.
 5. Na Vercel-u: Project → Settings → Environment Variables → dodaj ista
-   dva imena i vrednosti, pa ponovo deploy-uj (Redeploy).
+   imena i vrednosti, pa ponovo deploy-uj (Redeploy).
+6. **Authentication → URL Configuration** — dodaj svoj pravi domen (i
+   `/auth/callback` putanju) u "Redirect URLs", inače magic link mejlovi
+   neće raditi na produkciji.
 
-## Zaštita Trenerskog pregleda lozinkom
-`/trener` je zaštićen jednostavnom lozinkom preko `middleware.js`:
-1. Dodaj env promenljivu `COACH_PASSWORD` (i lokalno u `.env.local` i na
-   Vercel-u u Environment Variables) sa svojom tajnom lozinkom.
-2. Kad neko pokuša da otvori `/trener` bez prijave, biva preusmeren na
-   `/trener/login` gde unosi lozinku.
-3. Nakon tačne lozinke, postavlja se siguran (httpOnly) kolačić na 30 dana.
+## Fotografije (Supabase Storage) — privatan bucket
+Fotografije koje klijenti otpreme (onboarding, check-in) čuvaju se u
+Supabase Storage bucket-u `photos`, koji mora biti **PRIVATAN** (ne "Public
+bucket") — RLS politike u `supabase/schema.sql` garantuju da svaki klijent
+vidi samo svoje fotografije, a trener vidi sve. Aplikacija generiše signed
+URL (važi godinu dana) za prikaz, umesto trajnog javnog linka.
 
-Napomena: ovo sakriva stranicu i sprečava klijente da joj slučajno/lako
-pristupe, ali `anon` Supabase ključ i dalje dozvoljava čitanje/pisanje
-direktno iz baze bilo kome ko bi ga tehnički pronašao i iskoristio izvan
-same aplikacije. Za osetljivije podatke bi trebalo dodati pravu
-autentifikaciju na nivou baze (Supabase Auth + stroža RLS pravila).
+Podešavanje:
+1. Supabase dashboard → **Storage** → **New bucket**
+2. Naziv **tačno**: `photos`, **NE** uključuj "Public bucket", **Create**
+3. `supabase/schema.sql` (već pokrenut u koraku iznad) postavlja politike
+   koje ograničavaju pristup na vlasnika fotografije i trenera.
+
+Ako bucket nije podešen, aplikacija se automatski vraća na fallback (samo
+naziv fajla, bez trajnog čuvanja) — ništa se ne kvari, samo fotografije
+neće ostati sačuvane.
+
+**Statusi na zahtevima**
+U Trenerskom pregledu → tab Zahtevi, klikni na pilulu (Novo/Kontaktiran/Rešeno)
+da promeniš status — kruži kroz tri stanja pri svakom kliku.
+
+**Izvoz u CSV**
+U tabu Klijenti, dugme "Izvezi sve check-inove (CSV)" preuzima tabelu
+svih check-inova svih klijenata — otvara se u Excel-u/Google Sheets-u.
 
 ## Edukacija — nova struktura (kategorije → lekcije → pojedinačna lekcija)
 Edukacija više nije ravna lista — sada ima tri nivoa:
@@ -129,12 +164,12 @@ github.com u pregledaču:
 `/dokumenti` je (kao i Edukacija) zaključana istim Instagram "otključavanjem"
 — kad neko otključa jednu stranicu, otključana mu je i druga (isti kolačić/localStorage).
 
-U `app/dokumenti/page.js` je niz `DOCS` sa placeholder linkovima (`#`).
+U `app/(portal)/dokumenti/page.js` je niz `DOCS` sa placeholder linkovima (`#`).
 Da dodaš pravi PDF preko GitHub sajta (bez terminala):
 1. Otvori svoj repozitorijum na github.com
 2. Uđi u folder `public` → `dokumenti`
 3. Klikni **Add file → Upload files**, prevuci svoj PDF, pa **Commit changes**
-4. Vrati se u `app/dokumenti/page.js` (Edit preko olovke), i u `DOCS` nizu
+4. Vrati se u `app/(portal)/dokumenti/page.js` (Edit preko olovke), i u `DOCS` nizu
    promeni `url: "#"` u `url: "/dokumenti/tacno-ime-fajla.pdf"` za taj dokument
 5. Commit changes — gotovo, Vercel će automatski objaviti novu verziju
 
@@ -145,28 +180,9 @@ Share → "Anyone with the link", pa taj link nalepi direktno kao `url`.
 
 **Keep-alive (sprečava pauziranje besplatne Supabase baze)**
 `vercel.json` sadrži cron koji jednom dnevno pogodi `/api/keep-alive` i
-napravi mali upit ka bazi. Ne treba ništa dodatno da podesiš — počinje
-da radi čim se ovo objavi na Vercel-u (Vercel cron radi samo na
-Production deployment-u).
-
-**Prave fotografije (Supabase Storage)**
-Fotografije koje klijenti otpreme sada se trajno čuvaju (ranije su se
-samo privremeno prikazivale). Potrebno je jednokratno podešavanje:
-1. Supabase dashboard → **Storage** → **New bucket**
-2. Naziv **tačno**: `photos`, uključi **Public bucket**, **Create**
-3. U **SQL Editor**-u pokreni deo `supabase/schema.sql` ispod "FOTOGRAFIJE"
-   (ako si već pokrenuo/la ceo fajl ranije, samo dodaj taj novi deo)
-
-Ako bucket nije podešen, aplikacija se automatski vraća na stari
-fallback (samo naziv fajla, bez trajnog čuvanja) — ništa se ne kvari.
-
-**Statusi na zahtevima**
-U Trenerskom pregledu → tab Zahtevi, klikni na pilulu (Novo/Kontaktiran/Rešeno)
-da promeniš status — kruži kroz tri stanja pri svakom kliku.
-
-**Izvoz u CSV**
-U tabu Klijenti, dugme "Izvezi sve check-inove (CSV)" preuzima tabelu
-svih check-inova svih klijenata — otvara se u Excel-u/Google Sheets-u.
+napravi mali upit ka bazi (preko service role ključa, ne treba ulogovanog
+korisnika). Ne treba ništa dodatno da podesiš — počinje da radi čim se
+ovo objavi na Vercel-u (Vercel cron radi samo na Production deployment-u).
 
 ## Email obaveštenja (novi check-in / zahtev / poruka)
 Koristi se **Resend** (resend.com) — besplatan nalog:
@@ -182,12 +198,13 @@ Koristi se **Resend** (resend.com) — besplatan nalog:
 Ako `RESEND_API_KEY` nije podešen, aplikacija normalno radi dalje —
 samo bez slanja email-ova (forme se i dalje čuvaju u bazi kao i pre).
 
-## Lični plan po klijentu
+## Lični plan i feedback po klijentu
 U Trenerskom pregledu → klikni na klijenta → na vrhu je polje
-"Lični plan za [ime]" gde upišeš link ka PDF-u (npr. iz
-`public/dokumenti/` ili Google Drive) i/ili kratak tekst, pa
-"Sačuvaj plan". Klijent ga vidi na `/moj-plan` kad unese svoje ime
-(tačno onako kako ga je uneo/la u check-in formi).
+"Lični plan za [ime]" gde upišeš link ka PDF-u i/ili kratak tekst, i
+polje "Feedback na poslednji check-in" za kratku poruku klijentu — oba
+se čuvaju posebnim dugmetom. Klijent oboje vidi automatski na `/moj-plan`
+i `/napredak` (i na dashboard-u `/app`) — nema više ručnog unosa imena,
+vezano je za njegov nalog.
 
 ## Nedeljni podsetnik klijentima
 Ako je `RESEND_API_KEY` podešen, svake nedelje ujutru (cron u
@@ -205,10 +222,10 @@ email-a se preskaču (email polje u upitniku je opciono).
   trenerski pregled — to su privatne/funkcionalne strane, ne sadržaj za
   pretragu)
 
-**VAŽNO — pre nego što se objavi:** u `app/sitemap.js` i `app/robots.js`
-zameni `https://mihajlo-fitness-portal.vercel.app` svojim **stvarnim**
-URL-om sajta (proveri tačan link na Vercel dashboard-u — može se malo
-razlikovati).
+**VAŽNO — pre nego što se objavi:** postavi `NEXT_PUBLIC_SITE_URL` env
+promenljivu (na Vercel-u) na tvoj **stvarni** domen — `app/sitemap.js` i
+`app/robots.js` je automatski koriste (proveri tačan link na Vercel
+dashboard-u ako još nemaš sopstveni domen).
 
 **Koraci koje uradiš na Google strani (jednokratno, ~10 minuta):**
 1. Idi na **search.google.com/search-console**
@@ -288,7 +305,7 @@ sajta u `public` folder, tačno pod ta dva imena. Dok ih nema, prikazuje
 se uredan placeholder umesto polomljene slike.
 
 Tekst priče i highlight box (4 stavke) menjaš direktno u
-`app/o-meni/page.js` — sve je čist tekst, lako za izmenu.
+`app/(public)/o-meni/page.js` — sve je čist tekst, lako za izmenu.
 
 ## Pokretanje lokalno
 ```bash

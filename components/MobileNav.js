@@ -2,16 +2,29 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { NAV_ITEMS, COACH_ITEM } from "@/lib/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, LogOut, Home } from "lucide-react";
+import { PORTAL_NAV, COACH_ITEM } from "@/lib/navigation";
+import { useAuth } from "@/lib/auth";
 
-const PRIMARY = NAV_ITEMS.slice(0, 3); // Početna, Check-in, Napredak
-const MORE = [...NAV_ITEMS.slice(3), COACH_ITEM];
+const PRIMARY = PORTAL_NAV.slice(0, 3); // Početna, Check-in, Napredak
+const MORE = PORTAL_NAV.slice(3);
+// Poseban link nazad na javni sajt — namerno drugačiji label od portal
+// "Početna" (koja vodi na /app) da ne bude zabune šta je šta.
+const SAJT_ITEM = { href: "/", label: "Javni sajt", icon: Home };
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isCoach, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    setOpen(false);
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <>
@@ -53,8 +66,8 @@ export default function MobileNav() {
                 <X size={16} className="text-gray-500" />
               </button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              {[...NAV_ITEMS, COACH_ITEM].map((item) => {
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              {[...MORE, ...(isCoach ? [COACH_ITEM] : []), SAJT_ITEM].map((item) => {
                 const Icon = item.icon;
                 const active = pathname === item.href;
                 return (
@@ -73,6 +86,12 @@ export default function MobileNav() {
                 );
               })}
             </div>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-gray-100 py-3 text-[13px] font-medium text-gray-500"
+            >
+              <LogOut size={15} /> Odjava
+            </button>
           </div>
         </div>
       )}

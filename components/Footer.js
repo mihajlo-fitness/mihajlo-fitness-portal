@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Instagram, User, Mail } from "lucide-react";
-import { INSTAGRAM_URL, INSTAGRAM_HANDLE, COACH_EMAIL } from "@/lib/config";
+import { INSTAGRAM_URL, INSTAGRAM_HANDLE, COACH_CONTACT_EMAIL } from "@/lib/config";
 
 export default function Footer() {
   return (
@@ -25,7 +25,7 @@ export default function Footer() {
             <Instagram size={14} /> @{INSTAGRAM_HANDLE}
           </a>
           <a
-            href={`mailto:${COACH_EMAIL}`}
+            href={`mailto:${COACH_CONTACT_EMAIL}`}
             className="flex items-center gap-1.5 text-[12.5px] font-medium text-gray-400 hover:text-accent transition-colors"
           >
             <Mail size={14} /> Kontakt

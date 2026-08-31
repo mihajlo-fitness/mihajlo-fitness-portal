@@ -2,15 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Search, ChevronRight, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse, Ruler, Download } from "lucide-react";
+import { Search, ChevronRight, ChevronDown, ArrowLeft, TrendingUp, Dumbbell, Salad, Droplet, Moon, HeartPulse, Ruler, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { storageList, storageGet, storageSet } from "@/lib/storage";
 import { formatDateSr } from "@/lib/helpers";
-import { ACCENT, StatChip, Field, TextInput, TextArea } from "@/components/ui";
+import { ACCENT, Field, TextInput, TextArea } from "@/components/ui";
+import { useAuth } from "@/lib/auth";
 
 export default function TrenerPage() {
   const router = useRouter();
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState({});
   const [zahtevi, setZahtevi] = useState([]);
@@ -20,7 +22,7 @@ export default function TrenerPage() {
   const [selected, setSelected] = useState(null);
 
   const handleLogout = async () => {
-    await fetch("/api/trener-logout", { method: "POST" });
+    await signOut();
     router.push("/");
     router.refresh();
   };
@@ -56,6 +58,14 @@ export default function TrenerPage() {
         if (!val) continue;
         const slug = key.split(":")[1];
         if (map[slug]) map[slug].plan = val;
+      }
+
+      const feedbackKeys = await storageList("feedback:");
+      for (const key of feedbackKeys) {
+        const val = await storageGet(key);
+        if (!val) continue;
+        const slug = key.split(":")[1];
+        if (map[slug]) map[slug].feedback = val;
       }
 
       Object.values(map).forEach((c) => c.checkins.sort((a, b) => a.timestamp - b.timestamp));
@@ -95,7 +105,10 @@ export default function TrenerPage() {
     const idx = STATUSI.findIndex((s) => s.id === item.status);
     const next = STATUSI[(idx + 1) % STATUSI.length].id;
     const { key: _k, ...rest } = item;
-    await storageSet(key, { ...rest, status: next });
+    // ownerId eksplicitno null — zahtevi sa /coaching su anonimni
+    // (poslati pre nego što osoba ima nalog), ne treba da "pripadnu"
+    // treneru samo zato što ih trener ažurira.
+    await storageSet(key, { ...rest, status: next }, null);
     setZahtevi((prev) => prev.map((z) => (z.key === key ? { ...z, status: next } : z)));
   };
 
@@ -195,6 +208,9 @@ export default function TrenerPage() {
                     <p className="text-[14.5px] font-semibold text-gray-900">{z.ime}</p>
                     <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(z.timestamp).toISOString())}</span>
                   </div>
+                  {z.email && (
+                    <p className="text-[12.5px] text-gray-500 mb-1.5">📧 {z.email}</p>
+                  )}
                   <p className="text-[13px] font-medium text-accent mb-2">
                     {z.paket} {z.cena ? `· ${z.cena}` : ""}
                   </p>
@@ -225,6 +241,11 @@ export default function TrenerPage() {
                   <p className="text-[14.5px] font-semibold text-gray-900">{p.ime}</p>
                   <span className="text-[11.5px] text-gray-400">{formatDateSr(new Date(p.timestamp).toISOString())}</span>
                 </div>
+                {p.email && (
+                  <a href={`mailto:${p.email}`} className="text-[12px] font-medium text-accent mb-1.5 inline-block hover:underline">
+                    📧 {p.email}
+                  </a>
+                )}
                 <p className="text-[13px] text-gray-500 leading-relaxed">{p.poruka}</p>
               </div>
             ))
@@ -297,19 +318,33 @@ function ClientDetail({ client, onBack }) {
   const [savingPlan, setSavingPlan] = useState(false);
   const [planSaved, setPlanSaved] = useState(false);
 
+  const [feedbackTekst, setFeedbackTekst] = useState(client.feedback?.tekst || "");
+  const [savingFeedback, setSavingFeedback] = useState(false);
+  const [feedbackSaved, setFeedbackSaved] = useState(false);
+
   const savePlan = async () => {
     setSavingPlan(true);
-    await storageSet(`plan:${client.slug}`, { link: planLink, tekst: planTekst, updated: Date.now() });
+    // ownerId = client.slug (auth.uid() klijenta) EKSPLICITNO — trener
+    // piše ovaj red, ali mora "pripasti" klijentu da bi ga klijent
+    // video na /moj-plan (RLS proverava owner_id, ne ko je upisao red).
+    await storageSet(`plan:${client.slug}`, { link: planLink, tekst: planTekst, updated: Date.now() }, client.slug);
     setSavingPlan(false);
     setPlanSaved(true);
     setTimeout(() => setPlanSaved(false), 2000);
+  };
+
+  const saveFeedback = async () => {
+    setSavingFeedback(true);
+    await storageSet(`feedback:${client.slug}`, { tekst: feedbackTekst, updated: Date.now() }, client.slug);
+    setSavingFeedback(false);
+    setFeedbackSaved(true);
+    setTimeout(() => setFeedbackSaved(false), 2000);
   };
 
   const chartData = client.checkins.map((c) => ({
     label: c.nedelja ? `N${c.nedelja}` : formatDateSr(c.datum),
     tezina: c.tezina ? Number(c.tezina) : null,
   }));
-  const last = client.checkins.at(-1);
 
   return (
     <div className="max-w-md md:max-w-2xl mx-auto px-6 py-10 animate-fade-in">
@@ -317,7 +352,7 @@ function ClientDetail({ client, onBack }) {
         <ArrowLeft size={18} />
       </button>
 
-      <div className="flex items-center gap-3.5 mb-7">
+      <div className="flex items-center gap-3.5 mb-2">
         <div className="h-14 w-14 rounded-full flex items-center justify-center text-white font-semibold text-[18px] shrink-0 bg-accent">
           {client.name.slice(0, 1).toUpperCase()}
         </div>
@@ -328,6 +363,16 @@ function ClientDetail({ client, onBack }) {
           </p>
         </div>
       </div>
+
+      {client.onboarding?.email && (
+        <a
+          href={`mailto:${client.onboarding.email}`}
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-accent mb-7 hover:underline"
+        >
+          📧 {client.onboarding.email}
+        </a>
+      )}
+      {!client.onboarding?.email && <div className="mb-7" />}
 
       <div className="rounded-2xl border border-accent/20 bg-accent/[0.03] p-4 mb-6">
         <p className="text-[13px] font-semibold text-gray-900 mb-1">Lični plan za {client.name}</p>
@@ -348,51 +393,28 @@ function ClientDetail({ client, onBack }) {
         </button>
       </div>
 
+      <div className="rounded-2xl border border-gray-100 p-4 mb-6">
+        <p className="text-[13px] font-semibold text-gray-900 mb-1">Feedback na poslednji check-in</p>
+        <p className="text-[12px] text-gray-400 mb-3">
+          Vidljivo klijentu na /napredak — čak i par rečenica ("Odlična nedelja, samo popravi unos vode") menja
+          osećaj da je ovo razgovor, ne formular u prazno.
+        </p>
+        <Field label="Poruka klijentu (opciono)">
+          <TextArea rows={3} value={feedbackTekst} onChange={(e) => setFeedbackTekst(e.target.value)} placeholder="Npr. Odlična nedelja! Nastavi ovako, samo povećaj unos vode..." />
+        </Field>
+        <button
+          onClick={saveFeedback}
+          disabled={savingFeedback}
+          className="h-[42px] px-5 rounded-xl text-white font-semibold text-[13.5px] disabled:opacity-50"
+          style={{ background: ACCENT }}
+        >
+          {savingFeedback ? "Čuvanje..." : feedbackSaved ? "Sačuvano ✓" : "Sačuvaj feedback"}
+        </button>
+      </div>
+
       {client.onboarding && (
         <div className="mb-6">
-          <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Početni upitnik</p>
-          <div className="grid grid-cols-2 gap-2.5 mb-3">
-            <StatChip icon={<HeartPulse size={16} />} label="Godine" value={client.onboarding.godine} />
-            <StatChip icon={<Ruler size={16} />} label="Visina" value={client.onboarding.visina ? `${client.onboarding.visina} cm` : null} />
-            <StatChip icon={<TrendingUp size={16} />} label="Početna težina" value={client.onboarding.tezina ? `${client.onboarding.tezina} kg` : null} />
-            <StatChip icon={<Dumbbell size={16} />} label="Iskustvo" value={client.onboarding.iskustvo} />
-          </div>
-
-          <div className="rounded-2xl bg-gray-50/70 p-4 space-y-3">
-            <div>
-              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Cilj</p>
-              <p className="text-[13.5px] text-gray-700">
-                {client.onboarding.ciljChip}
-                {client.onboarding.cilj ? ` — ${client.onboarding.cilj}` : ""}
-                {!client.onboarding.ciljChip && !client.onboarding.cilj && "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Povrede / ograničenja</p>
-              <p className="text-[13.5px] text-gray-700">
-                {client.onboarding.povredeNema ? "Nema povreda ni ograničenja" : client.onboarding.povrede || "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Ishrana — navike i restrikcije</p>
-              <p className="text-[13.5px] text-gray-700">{client.onboarding.ishrana || "—"}</p>
-            </div>
-            <div>
-              <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Životne navike</p>
-              <p className="text-[13.5px] text-gray-700">
-                San {client.onboarding.san ? `${client.onboarding.san}h` : "—"} · Stres {client.onboarding.stres}/10 ·{" "}
-                {client.onboarding.posao || "—"} · Pušenje: {client.onboarding.pusenje || "—"} · Alkohol: {client.onboarding.alkohol || "—"}
-              </p>
-            </div>
-          </div>
-
-          {client.onboarding.merenja && Object.values(client.onboarding.merenja).some(Boolean) && (
-            <div className="grid grid-cols-2 gap-2.5 mt-3">
-              {Object.entries(client.onboarding.merenja).map(([k, v]) =>
-                v ? <StatChip key={k} icon={<Ruler size={15} />} label={k} value={`${v} cm`} /> : null
-              )}
-            </div>
-          )}
+          <OnboardingCard onboarding={client.onboarding} />
         </div>
       )}
 
@@ -413,49 +435,155 @@ function ClientDetail({ client, onBack }) {
         </div>
       )}
 
-      {last && (
-        <>
-          <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Poslednji check-in · {formatDateSr(last.datum)}</p>
-          <div className="grid grid-cols-2 gap-2.5 mb-6">
-            <StatChip icon={<TrendingUp size={16} />} label="Težina" value={last.tezina ? `${last.tezina} kg` : null} />
-            <StatChip icon={<Dumbbell size={16} />} label="Treninzi" value={last.treninzi} />
-            <StatChip icon={<Salad size={16} />} label="Ishrana" value={last.ishranaPlan} />
-            <StatChip icon={<Droplet size={16} />} label="Voda" value={last.voda ? `${last.voda} L` : null} />
-            <StatChip icon={<Moon size={16} />} label="San" value={last.san ? `${last.san} h` : null} />
-            <StatChip icon={<HeartPulse size={16} />} label="Osećaj" value={last.osecaj ? `${last.osecaj}/10` : null} />
+      <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">
+        Nedeljni check-inovi {client.checkins.length > 0 && `(${client.checkins.length})`}
+      </p>
+      {client.checkins.length === 0 ? (
+        <p className="text-[13px] text-gray-300">Nema poslatih nedeljnih check-inova.</p>
+      ) : (
+        <div className="space-y-2.5">
+          {client.checkins
+            .slice()
+            .reverse()
+            .map((c, i) => (
+              <CheckinCard key={i} checkin={c} defaultOpen={i === 0} />
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Jedna kartica po check-inu — zatvorena po difoltu (osim najnovije),
+// klikom se otvara sa svim detaljima (mere, ocene, pitanja, fotografije).
+// Ovo omogućava treneru da pregleda BILO KOJU nedelju u detalje, ne
+// samo poslednju.
+function RatingBar({ label, value }) {
+  if (!value) return null;
+  const pct = (Number(value) / 10) * 100;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-[12px] text-gray-500 w-[68px] shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: ACCENT }} />
+      </div>
+      <span className="text-[12px] font-semibold text-gray-700 w-6 text-right">{value}</span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-xl bg-gray-50 py-2.5 text-center">
+      <p className="text-[13px] font-semibold text-gray-900 leading-tight">{value ?? "—"}</p>
+      <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+    </div>
+  );
+}
+
+function SectionLabel({ children }) {
+  return <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2.5">{children}</p>;
+}
+
+function CheckinCard({ checkin, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const c = checkin;
+  const imaFotografije = c.slike && Object.values(c.slike).some((v) => typeof v === "string" && v.startsWith("http"));
+  const imaOcene = c.osecaj || c.energija || c.glad || c.stres || c.motivacija;
+  const imaMere = c.merenja && Object.values(c.merenja).some(Boolean);
+  const napomene = [
+    { label: "Najlakše ove nedelje", value: c.najlakse },
+    { label: "Najteže ove nedelje", value: c.najteze },
+    { label: "Bolovi", value: c.bolovi },
+    { label: "Želi da promeni", value: c.promene },
+    { label: "Pitanje za trenera", value: c.pitanje },
+  ].filter((n) => n.value);
+
+  return (
+    <div className="rounded-2xl border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50/60 transition-colors"
+      >
+        <div>
+          <p className="text-[14px] font-semibold text-gray-900">{c.nedelja ? `Nedelja ${c.nedelja}` : "Check-in"}</p>
+          <p className="text-[12px] text-gray-400">{formatDateSr(c.datum)}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-[13.5px] font-semibold text-gray-900">{c.tezina ? `${c.tezina} kg` : "—"}</p>
+          <ChevronDown size={16} className={"text-gray-300 transition-transform " + (open ? "rotate-180" : "")} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-5 pt-4 border-t border-gray-50 animate-fade-in space-y-5">
+          {/* Brzi pregled brojki — jedan red, lako se skenira */}
+          <div>
+            <SectionLabel>Brojke</SectionLabel>
+            <div className="grid grid-cols-4 gap-2">
+              <MiniStat label="Težina" value={c.tezina ? `${c.tezina}kg` : null} />
+              <MiniStat label="Treninzi" value={c.treninzi} />
+              <MiniStat label="Voda" value={c.voda ? `${c.voda}L` : null} />
+              <MiniStat label="San" value={c.san ? `${c.san}h` : null} />
+            </div>
           </div>
 
-          {(last.najteze || last.bolovi || last.pitanje) && (
-            <div className="rounded-2xl bg-gray-50/70 p-4 space-y-3 mb-6">
-              {last.najteze && (
-                <div>
-                  <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Najteže ove nedelje</p>
-                  <p className="text-[13.5px] text-gray-700">{last.najteze}</p>
-                </div>
-              )}
-              {last.bolovi && (
-                <div>
-                  <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Bolovi</p>
-                  <p className="text-[13.5px] text-gray-700">{last.bolovi}</p>
-                </div>
-              )}
-              {last.pitanje && (
-                <div>
-                  <p className="text-[11.5px] font-semibold text-gray-400 mb-0.5">Pitanje za trenera</p>
-                  <p className="text-[13.5px] text-gray-700">{last.pitanje}</p>
-                </div>
-              )}
+          {/* Ishrana kao poseban red jer je tekst, ne broj */}
+          {c.ishranaPlan && (
+            <div className="flex items-center gap-2 -mt-2">
+              <Salad size={13} className="text-gray-350 shrink-0" />
+              <span className="text-[12.5px] text-gray-500">Ishrana: {c.ishranaPlan}</span>
             </div>
           )}
 
-          {last.slike && Object.values(last.slike).some((v) => typeof v === "string" && v.startsWith("http")) && (
-            <div className="mb-6">
-              <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Fotografije · {formatDateSr(last.datum)}</p>
+          {/* Ocene kao vizuelne trake — brže se čita raspoloženje na prvi pogled */}
+          {imaOcene && (
+            <div>
+              <SectionLabel>Kako se osećao/la</SectionLabel>
+              <div className="space-y-2">
+                <RatingBar label="Osećaj" value={c.osecaj} />
+                <RatingBar label="Energija" value={c.energija} />
+                <RatingBar label="Glad" value={c.glad} />
+                <RatingBar label="Stres" value={c.stres} />
+                <RatingBar label="Motivacija" value={c.motivacija} />
+              </div>
+            </div>
+          )}
+
+          {/* Mere */}
+          {imaMere && (
+            <div>
+              <SectionLabel>Mere (cm)</SectionLabel>
+              <div className="grid grid-cols-4 gap-2">
+                {Object.entries(c.merenja).map(([k, v]) => (v ? <MiniStat key={k} label={k} value={v} /> : null))}
+              </div>
+            </div>
+          )}
+
+          {/* Napomene — svaka u svom redu, sa jasnim naslovom */}
+          {napomene.length > 0 && (
+            <div>
+              <SectionLabel>Napomene klijenta</SectionLabel>
+              <div className="rounded-2xl bg-gray-50/70 divide-y divide-gray-100">
+                {napomene.map((n) => (
+                  <div key={n.label} className="p-3.5">
+                    <p className="text-[11px] font-medium text-gray-400 mb-0.5">{n.label}</p>
+                    <p className="text-[13.5px] text-gray-700 leading-snug">{n.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fotografije */}
+          {imaFotografije && (
+            <div>
+              <SectionLabel>Fotografije</SectionLabel>
               <div className="grid grid-cols-3 gap-2.5">
                 {["front", "ledja", "profil"].map((k) =>
-                  last.slike[k]?.startsWith("http") ? (
-                    <a key={k} href={last.slike[k]} target="_blank" rel="noopener noreferrer" className="aspect-[3/4] rounded-xl overflow-hidden border border-gray-100">
-                      <img src={last.slike[k]} alt={k} className="w-full h-full object-cover" />
+                  c.slike[k]?.startsWith("http") ? (
+                    <a key={k} href={c.slike[k]} target="_blank" rel="noopener noreferrer" className="aspect-[3/4] rounded-xl overflow-hidden border border-gray-100">
+                      <img src={c.slike[k]} alt={k} className="w-full h-full object-cover" />
                     </a>
                   ) : (
                     <div key={k} className="aspect-[3/4] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[11px] text-gray-300">
@@ -466,25 +594,103 @@ function ClientDetail({ client, onBack }) {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
+    </div>
+  );
+}
 
-      <p className="text-[12.5px] font-semibold text-gray-500 mb-2.5">Istorija check-inova</p>
-      <div className="space-y-2">
-        {client.checkins
-          .slice()
-          .reverse()
-          .map((c, i) => (
-            <div key={i} className="rounded-xl border border-gray-100 p-3.5 flex items-center justify-between">
-              <div>
-                <p className="text-[13.5px] font-medium text-gray-800">{c.nedelja ? `Nedelja ${c.nedelja}` : "Check-in"}</p>
-                <p className="text-[12px] text-gray-400">{formatDateSr(c.datum)}</p>
-              </div>
-              <p className="text-[13.5px] font-semibold text-gray-900">{c.tezina ? `${c.tezina} kg` : "—"}</p>
+// Isti "kartica" obrazac kao check-inovi — zatvorena po difoltu, da ne
+// gura check-inove (koji se gledaju cesce) nadole svaki put kad se
+// otvori klijent.
+function OnboardingCard({ onboarding: o }) {
+  const [open, setOpen] = useState(false);
+  const imaMere = o.merenja && Object.values(o.merenja).some(Boolean);
+  const imaFotografije = o.slike && Object.values(o.slike).some((v) => typeof v === "string" && v.startsWith("http"));
+
+  return (
+    <div className="rounded-2xl border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50/60 transition-colors"
+      >
+        <div>
+          <p className="text-[14px] font-semibold text-gray-900">Početni upitnik</p>
+          <p className="text-[12px] text-gray-400">{o.ciljChip || o.cilj || "—"}</p>
+        </div>
+        <ChevronDown size={16} className={"text-gray-300 transition-transform shrink-0 " + (open ? "rotate-180" : "")} />
+      </button>
+
+      {open && (
+        <div className="px-4 pb-5 pt-4 border-t border-gray-50 animate-fade-in space-y-5">
+          <div>
+            <SectionLabel>Osnovno</SectionLabel>
+            <div className="grid grid-cols-4 gap-2">
+              <MiniStat label="Godine" value={o.godine} />
+              <MiniStat label="Visina" value={o.visina ? `${o.visina}cm` : null} />
+              <MiniStat label="Početna tež." value={o.tezina ? `${o.tezina}kg` : null} />
+              <MiniStat label="Iskustvo" value={o.iskustvo} />
             </div>
-          ))}
-        {client.checkins.length === 0 && <p className="text-[13px] text-gray-300">Nema poslatih nedeljnih check-inova.</p>}
-      </div>
+          </div>
+
+          <div>
+            <SectionLabel>Detalji</SectionLabel>
+            <div className="rounded-2xl bg-gray-50/70 divide-y divide-gray-100">
+              <div className="p-3.5">
+                <p className="text-[11px] font-medium text-gray-400 mb-0.5">Cilj</p>
+                <p className="text-[13.5px] text-gray-700">
+                  {o.ciljChip}
+                  {o.cilj ? ` — ${o.cilj}` : ""}
+                  {!o.ciljChip && !o.cilj && "—"}
+                </p>
+              </div>
+              <div className="p-3.5">
+                <p className="text-[11px] font-medium text-gray-400 mb-0.5">Povrede / ograničenja</p>
+                <p className="text-[13.5px] text-gray-700">{o.povredeNema ? "Nema povreda ni ograničenja" : o.povrede || "—"}</p>
+              </div>
+              <div className="p-3.5">
+                <p className="text-[11px] font-medium text-gray-400 mb-0.5">Ishrana — navike i restrikcije</p>
+                <p className="text-[13.5px] text-gray-700">{o.ishrana || "—"}</p>
+              </div>
+              <div className="p-3.5">
+                <p className="text-[11px] font-medium text-gray-400 mb-0.5">Životne navike</p>
+                <p className="text-[13.5px] text-gray-700">
+                  San {o.san ? `${o.san}h` : "—"} · Stres {o.stres}/10 · {o.posao || "—"} · Pušenje: {o.pusenje || "—"} · Alkohol:{" "}
+                  {o.alkohol || "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {imaMere && (
+            <div>
+              <SectionLabel>Početne mere (cm)</SectionLabel>
+              <div className="grid grid-cols-4 gap-2">
+                {Object.entries(o.merenja).map(([k, v]) => (v ? <MiniStat key={k} label={k} value={v} /> : null))}
+              </div>
+            </div>
+          )}
+
+          {imaFotografije && (
+            <div>
+              <SectionLabel>Fotografije (početno stanje)</SectionLabel>
+              <div className="grid grid-cols-3 gap-2.5">
+                {["front", "ledja", "profil"].map((k) =>
+                  o.slike[k]?.startsWith("http") ? (
+                    <a key={k} href={o.slike[k]} target="_blank" rel="noopener noreferrer" className="aspect-[3/4] rounded-xl overflow-hidden border border-gray-100">
+                      <img src={o.slike[k]} alt={k} className="w-full h-full object-cover" />
+                    </a>
+                  ) : (
+                    <div key={k} className="aspect-[3/4] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[11px] text-gray-300">
+                      —
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
